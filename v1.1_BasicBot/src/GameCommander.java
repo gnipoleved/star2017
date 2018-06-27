@@ -2,6 +2,8 @@ import bwapi.Player;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
+import bwta.BWTA;
+import bwta.BaseLocation;
 
 /// 실제 봇프로그램의 본체가 되는 class<br>
 /// 스타크래프트 경기 도중 발생하는 이벤트들이 적절하게 처리되도록 해당 Manager 객체에게 이벤트를 전달하는 관리자 Controller 역할을 합니다
@@ -18,6 +20,13 @@ public class GameCommander {
 			return;
 		}
 		StrategyManager.Instance().onStart();
+		
+		
+		for (BaseLocation startBase : BWTA.getStartLocations())
+		{
+			System.out.println(startBase.getTilePosition());
+		}
+		
 	}
 
 	/// 경기가 종료될 때 일회적으로 발생하는 이벤트를 처리합니다
@@ -36,43 +45,43 @@ public class GameCommander {
 			return;
 		}
 
-		if ( isToFindError) System.out.print("(a");
-
-		// 아군 베이스 위치. 적군 베이스 위치. 각 유닛들의 상태정보 등을 Map 자료구조에 저장/업데이트
-		InformationManager.Instance().update();
-
-		if ( isToFindError) System.out.print("b");
-	
-		// 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
-		MapGrid.Instance().update();
-
-		if ( isToFindError) System.out.print("c");
-
-		// economy and base managers
-		// 일꾼 유닛에 대한 명령 (자원 채취, 이동 정도) 지시 및 정리
-		WorkerManager.Instance().update();
-
-		if ( isToFindError) System.out.print("d");
-
-		// 빌드오더큐를 관리하며, 빌드오더에 따라 실제 실행(유닛 훈련, 테크 업그레이드 등)을 지시한다.
-		BuildManager.Instance().update();
-
-		if ( isToFindError) System.out.print("e");
-
-		// 빌드오더 중 건물 빌드에 대해서는, 일꾼유닛 선정, 위치선정, 건설 실시, 중단된 건물 빌드 재개를 지시한다
-		ConstructionManager.Instance().update();
-
-		if ( isToFindError) System.out.print("f");
-
-		// 게임 초기 정찰 유닛 지정 및 정찰 유닛 컨트롤을 실행한다
-		ScoutManager.Instance().update();
-
-		if ( isToFindError) System.out.print("g");
-
-		// 전략적 판단 및 유닛 컨트롤
-		StrategyManager.Instance().update();
-
-		if ( isToFindError) System.out.print("h)");
+//		if ( isToFindError) System.out.print("(a");
+//
+//		// 아군 베이스 위치. 적군 베이스 위치. 각 유닛들의 상태정보 등을 Map 자료구조에 저장/업데이트
+//		InformationManager.Instance().update();
+//
+//		if ( isToFindError) System.out.print("b");
+//	
+//		// 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
+//		MapGrid.Instance().update();
+//
+//		if ( isToFindError) System.out.print("c");
+//
+//		// economy and base managers
+//		// 일꾼 유닛에 대한 명령 (자원 채취, 이동 정도) 지시 및 정리
+//		WorkerManager.Instance().update();
+//
+//		if ( isToFindError) System.out.print("d");
+//
+//		// 빌드오더큐를 관리하며, 빌드오더에 따라 실제 실행(유닛 훈련, 테크 업그레이드 등)을 지시한다.
+//		BuildManager.Instance().update();
+//
+//		if ( isToFindError) System.out.print("e");
+//
+//		// 빌드오더 중 건물 빌드에 대해서는, 일꾼유닛 선정, 위치선정, 건설 실시, 중단된 건물 빌드 재개를 지시한다
+//		ConstructionManager.Instance().update();
+//
+//		if ( isToFindError) System.out.print("f");
+//
+//		// 게임 초기 정찰 유닛 지정 및 정찰 유닛 컨트롤을 실행한다
+//		ScoutManager.Instance().update();
+//
+//		if ( isToFindError) System.out.print("g");
+//
+//		// 전략적 판단 및 유닛 컨트롤
+//		StrategyManager.Instance().update();
+//
+//		if ( isToFindError) System.out.print("h)");
 	}
 
 	/// 유닛(건물/지상유닛/공중유닛)이 Create 될 때 발생하는 이벤트를 처리합니다
