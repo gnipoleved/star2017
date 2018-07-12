@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import bwapi.UnitType;
+
 public class Common {
 
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////
@@ -63,5 +65,25 @@ public class Common {
 	}
 	
 	// BasicBot 1.1 Patch End //////////////////////////////////////////////////
+	
+	public static int WholeUnitCount(UnitType unitType)
+	{
+		return CountCompleted(unitType) + CountIncompleted(unitType) + CountInBuildQ(unitType);
+	}
+	
+	public static int CountInBuildQ(UnitType unitType)
+	{
+		return BuildManager.Instance().buildQueue.getItemCount(unitType);
+	}
+	
+	public static int CountIncompleted(UnitType unitType)
+	{
+		return MyBotModule.Broodwar.self().incompleteUnitCount(unitType);
+	}
+	
+	public static int CountCompleted(UnitType unitType)
+	{
+		return MyBotModule.Broodwar.self().completedUnitCount(unitType);
+	}
 	
 }

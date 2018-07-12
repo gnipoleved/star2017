@@ -12,6 +12,12 @@ import bwta.BWTA;
 /// 지도를 바둑판처럼 Cell 들로 나누고, 매 frame 마다 각 Cell 의 timeLastVisited 시간정보, timeLastOpponentSeen 시간정보, ourUnits 와 oppUnits 목록을 업데이트 합니다
 public class MapGrid {
 
+	// ljw
+	public static TilePosition GetTileFromPool(int x, int y)
+	{
+		return MapGrid.Instance().gridCells[(x-1)*128+(y-1)].toTilePosition();
+	}
+	
 	/// 지도를 바둑판처럼 Cell 들로 나누기 위해서 정의한 하나의 Cell
 	class GridCell
 	{
@@ -20,16 +26,25 @@ public class MapGrid {
 		private List<Unit> ourUnits= new ArrayList<Unit>();
 		private List<Unit> oppUnits= new ArrayList<Unit>();
 		private Position center;
-
-		public GridCell()
+		
+		private TilePosition tilePosition;
+		
+		public GridCell(int index)	// ljw
 		{
 			timeLastVisited = 0;
 			timeLastOpponentSeen = 0;
+			tilePosition = new TilePosition((index / 128) + 1, (index % 128) + 1);
 		}
 		
 		public Position getCenter()
 		{
 			return center;
+		}
+		
+		// ljw
+		public TilePosition toTilePosition()
+		{
+			return tilePosition;
 		}
 	};
 	
@@ -59,7 +74,7 @@ public class MapGrid {
 		this.gridCells = new GridCell[this.rows * this.cols];
 		for (int i = 0; i< this.gridCells.length ; ++i)
 		{
-			gridCells[i] = new GridCell();
+			gridCells[i] = new GridCell(i);
 		}
 		this.lastUpdated = 0;
 		calculateCellCenters();

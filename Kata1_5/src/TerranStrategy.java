@@ -688,6 +688,22 @@ public class TerranStrategy implements Strategy {
 			if (underAttackScvCnt > 0) state = defense_base;
 		}
 		
+		if (state == defense_base) {
+			if (scvCnt < 15 && marineCnt < 1) 
+			{
+				construct(UnitType.Terran_Bunker, mapStrategy.Bunker1Position(), BuildOrderItem.SeedPositionStrategy.MainBaseLocation);
+			}
+			
+			if (supplyProvidedCnt + supplyProvidedConstCnt >= supplyOccupiedCnt + supplyOccupiedConstCnt)
+			{
+				if (factoryCnt < 1) 
+				{
+					make marin
+				}
+			}
+			
+		}
+		
 		//if (state != initState) return;
 		
 		/*

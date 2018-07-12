@@ -13,6 +13,9 @@ public class BuildOrderItem {
 	public TilePosition seedLocation; 	///< 건설 위치
 	public int producerID;				///< producer unitID (건물ID, 유닛ID)
 	
+	public boolean fixed = false;	//ljw
+	
+	
 	/// 건설위치 초안 결정 정책
 	/// 향후 적진 길목, 언덕 위 등 추가
 	public enum SeedPositionStrategy { 
@@ -53,6 +56,19 @@ public class BuildOrderItem {
 	public BuildOrderItem(MetaType metaType){
 		this(metaType, 0, true, -1);
 	}
+	
+	//ljw : 건설 위치를 seedLocation 으로만 정한다.
+	public BuildOrderItem(MetaType metaType, TilePosition seedLocation, int priority, boolean blocking, int producerID, boolean fixed)
+	{
+		this.metaType = metaType;
+		this.priority = priority;
+		this.blocking = blocking;
+		this.producerID = producerID;
+		this.seedLocation = seedLocation;
+		this.seedLocationStrategy = SeedPositionStrategy.SeedPositionSpecified;
+		this.fixed = fixed;
+	}
+	
 
 	/// 건설 위치를 seedLocation 주위에서 찾는다
 	public BuildOrderItem(MetaType metaType, TilePosition seedLocation, int priority, boolean blocking, int producerID)
