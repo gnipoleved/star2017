@@ -21,14 +21,14 @@ public class GameCommander {
 		}
 		
 		logger.logOnStart();
-		StrategyManager.Instance().onStart();
+		_StrategyManager.Instance().onStart();
 	}
 
 	/// 경기가 종료될 때 일회적으로 발생하는 이벤트를 처리합니다
 	public void onEnd(boolean isWinner)
 	{
 		logger.logOnEnd(isWinner);
-		StrategyManager.Instance().onEnd(isWinner);
+		_StrategyManager.Instance().onEnd(isWinner);
 	}
 
 	/// 경기 진행 중 매 프레임마다 발생하는 이벤트를 처리합니다
@@ -89,10 +89,13 @@ public class GameCommander {
 	}
 
 	///  유닛(건물/지상유닛/공중유닛)이 Destroy 될 때 발생하는 이벤트를 처리합니다
-	public void onUnitDestroy(Unit unit) {	
-		 logger.logOnUnitDestroy(unit);
+	public void onUnitDestroy(Unit unit) {
+		logger.logOnUnitDestroy(unit);
+				 
 		// 적군 사망자 숫자를 정확하게 카운트하기 위해 추가
-		StrategyManager.Instance().onUnitDestroy(unit);
+		// ljw : StrategyManager 가 아닌 InformationManager 에 이미 구현되어 있는 걸 사용해 보자. UnitData.RemoveUnit 인가 이 메소드에서 이미 구현되어 있는 거 같은데...
+//		StrategyManager.Instance().onUnitDestroy(unit);
+		InformationManager.Instance().onUnitDestroy(unit);
 		
 		// ResourceDepot 및 Worker 에 대한 처리
 		WorkerManager.Instance().onUnitDestroy(unit);

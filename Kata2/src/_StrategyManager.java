@@ -1,4 +1,5 @@
 import bwapi.Position;
+import bwapi.Unit;
 
 public class _StrategyManager {
 	
@@ -44,7 +45,8 @@ public class _StrategyManager {
 //		terranStrategy.mapTactic = mapTactic;
 //		instance.strategy = terranStrategy;
 		
-		instance.strategy = _StrategySelector.select();
+		// onStart 에 넣도록 한다.
+//		instance.strategy = _StrategySelector.select();
 		
 		return instance;
 	}
@@ -56,6 +58,8 @@ public class _StrategyManager {
 	{
 		// TODO: 과거 게임 기록을 로딩하는 것. PRIORITY-3
 		// loadGameRecordList();
+		instance.strategy = _StrategySelector.select();
+		
 		strategy.start();
 	}
 	
@@ -74,4 +78,5 @@ public class _StrategyManager {
 		// TODO
 		strategy.handleNuclearAttack(target);
 	}
+
 }

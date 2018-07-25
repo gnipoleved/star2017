@@ -177,6 +177,11 @@ public class InformationManager {
 		}
 
 		unitData.get(unit.getPlayer()).removeUnit(unit);
+		
+		if (unit.getType().isNeutral()) {
+			return;
+		}
+		
 	}
 
 

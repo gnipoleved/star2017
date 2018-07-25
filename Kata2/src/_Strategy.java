@@ -55,6 +55,9 @@ class _StrategySelector
 			terranStrategy = new _VsZergStrategy();
 		}
 		
+		
+		__Util.println(" >>>> MapTactic Type : " + mapTactic.getClass().getSimpleName());
+		
 		terranStrategy.mapTactic = mapTactic;
 		return terranStrategy;
 		
