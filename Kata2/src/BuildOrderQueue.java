@@ -294,6 +294,12 @@ public class BuildOrderQueue {
 	public void queueAsHighestPriority(UpgradeType upgradeType, boolean blocking){
 		queueAsHighestPriority(upgradeType, blocking, -1);
 	}
+	
+	// ljw: fixed position
+	public void queueAsFixedPosition(UnitType unitType, TilePosition seedPosition, boolean blocking)
+	{
+		queueItem(new BuildOrderItem(new MetaType(unitType), seedPosition, 0, blocking, -1, true));
+	}
 
 	/// 빌드오더를 가장 낮은 우선순위로 buildQueue 에 추가한다. blocking (다른 것을 생산하지 않고, 이것을 생산 가능하게 될 때까지 기다리는 모드) 기본값은 true 이다
 	public void queueAsLowestPriority(MetaType metaType, boolean blocking, int producerID)
@@ -371,18 +377,19 @@ public class BuildOrderQueue {
 		queueAsLowestPriority(upgradeType, true);
 	}
 
+	// comment : ljw
 	/// removes the highest priority item
-	public void removeHighestPriorityItem() 
-	{
-		// remove the back element of the vector
-		// queue.pop_back();
-		queue.removeFirst();
-
-		// if the list is not empty, set the highest accordingly
-		// highestPriority = queue.isEmpty() ? 0 : queue.back().priority;
-		highestPriority = queue.isEmpty() ? 0 : queue.getLast().priority;
-		lowestPriority  = queue.isEmpty() ? 0 : lowestPriority;
-	}
+//	public void removeHighestPriorityItem()
+//	{
+//		// remove the back element of the vector
+//		// queue.pop_back();
+//		queue.removeFirst();
+//
+//		// if the list is not empty, set the highest accordingly
+//		// highestPriority = queue.isEmpty() ? 0 : queue.back().priority;
+//		highestPriority = queue.isEmpty() ? 0 : queue.getLast().priority;
+//		lowestPriority  = queue.isEmpty() ? 0 : lowestPriority;
+//	}
 
 	/// skippedItems 다음의 item 을 제거합니다
 	public void removeCurrentItem() 

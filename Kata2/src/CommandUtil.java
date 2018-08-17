@@ -9,6 +9,83 @@ import bwapi.WeaponType;
 
 public class CommandUtil {
 
+	private static CommandUtil commandUtil = new CommandUtil();
+
+	public static void ATTACK_UNIT(Unit attacker, Unit target){
+		commandUtil.attackUnit(attacker, target);
+	}
+
+	public static void ATTACK_MOVE(Unit attacker, final Position targetPosition)
+	{
+		commandUtil.attackMove(attacker, targetPosition);
+	}
+
+	public static void MOVE(Unit unit, Position targetPosition) {
+		commandUtil.move(unit, targetPosition);
+	}
+
+	public static void MOVE_BACK(Unit movingUnit, Unit from) {
+		int psx = movingUnit.getPosition().getX(), psy = movingUnit.getPosition().getY();
+		int pex = from.getPosition().getX(), pey = from.getPosition().getY();
+
+		int vectorX = pex-psx, vectorY = pey-psy;
+		commandUtil.move(movingUnit, new Position(psx-vectorX, psy-vectorY));
+	}
+
+	public static void RIGHT_CLICK(Unit unit, Unit target){
+		commandUtil.rightClick(unit, target);
+	}
+
+	public static void REPAIR(Unit unit, Unit target) {
+		commandUtil.repair(unit, target);
+	}
+
+	public static boolean IS_COMBAT_UNIT(Unit unit) {
+		return commandUtil.IsCombatUnit(unit);
+	}
+
+	public static boolean IS_VALID_UNIT(Unit unit) {
+		return commandUtil.IsValidUnit(unit);
+	}
+
+	public static boolean CAN_ATTACK(Unit attacker, Unit target)
+	{
+		return commandUtil.CanAttack(attacker, target);
+	}
+
+	public static boolean CAN_ATTACK_AIR(Unit unit)
+	{
+		return commandUtil.CanAttackAir(unit);
+	}
+
+	public static boolean CAN_ATTACK_GROUND(Unit unit)
+	{
+		return commandUtil.CanAttackGround(unit);
+	}
+
+	public static int GET_ALL_UNIT_COUNT(UnitType type) {
+		return commandUtil.GetAllUnitCount(type);
+	}
+
+	public static WeaponType GET_WEAPON(Unit attacker, Unit target) {
+		return commandUtil.GetWeapon(attacker, target);
+	}
+
+	public static WeaponType GET_WEAPON(UnitType attacker, UnitType target) {
+		return commandUtil.GetWeapon(attacker, target);
+	}
+
+	public static int GET_ATTACK_RANGE(Unit attacker, Unit target) {
+		return commandUtil.GetAttackRange(attacker, target);
+	}
+
+	public static int GET_ATTACK_RANGE(UnitType attacker, UnitType target) {
+		return commandUtil.GetAttackRange(attacker, target);
+	}
+
+
+
+
 	public void attackUnit(Unit attacker, Unit target)
 	{
 		if (attacker == null || target == null)

@@ -29,6 +29,9 @@ public class UnitData {
 	/// JAVA 에서는 UnitType 의 열거형 값이 부재하므로 Unit.getType() 값을 Key 로 사용함
 	Map<String,Integer> numUnits = new HashMap<String,Integer>();
 	
+	// MyBotModule.Broodwar.self().incompleteUnitCount(unitType); 이 제대로 되는 것 같지 않아서... // 음 내가 그냥 직접 컨트롤 해서 만들면... 되는거 같은데...
+//	Map<String, Integer> numIncompletedUnits = new HashMap<String, Integer>();
+	
 	/// 사망한 유닛을 생산하는데 소요되었던 Mineral 의 누적값 (얼마나 손해를 보았는가 계산하기 위함임)
 	private int mineralsLost = 0;
 	/// 사망한 유닛을 생산하는데 소요되었던 Gas 의 누적값 (얼마나 손해를 보았는가 계산하기 위함임)
@@ -53,9 +56,9 @@ public class UnitData {
 	}
 
 	/// 유닛의 상태정보를 업데이트합니다
-	public void updateUnitInfo(Unit unit)
+	public UnitInfo updateUnitInfo(Unit unit)
 	{
-		if (unit == null) { return; }
+		if (unit == null) { return null; }
 
 		boolean firstSeen = false;
 		if (!unitAndUnitInfoMap.containsKey(unit.getID()))
@@ -73,6 +76,7 @@ public class UnitData {
 		ui.setUnitID(unit.getID());
 		ui.setType(unit.getType());
 		ui.setCompleted(unit.isCompleted());
+		ui.setFirstSeen(firstSeen);
 		
 		//unitAndUnitInfoMap.put(unit, ui);
 		
@@ -91,6 +95,11 @@ public class UnitData {
 			//numCreatedUnits[unit.getType().getID()]++;
 			//numUnits[unit.getType().getID()]++;
 		}
+		
+//		if (ui.isCompleted()) {
+//			numIncompletedUnits
+//		}
+		return ui;
 	}
 
 	/// 파괴/사망한 유닛을 자료구조에서 제거합니다
@@ -105,6 +114,7 @@ public class UnitData {
 		}else{
 			numUnits.put(unit.getType().toString(), numUnits.get(unit.getType().toString()) - 1);
 		}
+		
 		if(!numDeadUnits.containsKey(unit.getType().toString())){
 			numDeadUnits.put(unit.getType().toString(), 1);
 		}else{

@@ -34,7 +34,7 @@ public class WorkerManager {
 		handleGasWorkers();
 		handleIdleWorkers();
 		handleMoveWorkers();
-		handleCombatWorkers();
+		//handleCombatWorkers();	// 일단 이건 startegyManager 에서 하는걸로...
 		handleRepairWorkers();
 	}
 	
@@ -162,7 +162,11 @@ public class WorkerManager {
 		{
 			if (worker == null) continue;
 
-			if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Combat)
+			WorkerData.WorkerJob workerJob = workerData.getWorkerJob(worker);
+			//__Util.println(worker.getID() + " : " + workerJob.toString());
+
+			//if (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Combat)
+			if (workerJob == WorkerData.WorkerJob.Combat)
 			{
 				MyBotModule.Broodwar.drawCircleMap(worker.getPosition().getX(), worker.getPosition().getY(), 4, Color.Yellow, true);
 				Unit target = getClosestEnemyUnitFromWorker(worker);
@@ -452,7 +456,8 @@ public class WorkerManager {
 			if (workerData.getWorkers().size() >= 2 && avoidWorkerID != 0 && unit.getID() == avoidWorkerID) continue;
 
 			// Move / Idle Worker
-			if (unit.isCompleted() && (workerData.getWorkerJob(unit) == WorkerData.WorkerJob.Move || workerData.getWorkerJob(unit) == WorkerData.WorkerJob.Idle))
+			//if (unit.isCompleted() && (workerData.getWorkerJob(unit) == WorkerData.WorkerJob.Move || workerData.getWorkerJob(unit) == WorkerData.WorkerJob.Idle))
+			if (unit.isCompleted() && (workerData.getWorkerJob(unit) == WorkerData.WorkerJob.Idle))
 			{
 				// if it is a new closest distance, set the pointer
 				double distance = unit.getDistance(buildingPosition.toPosition());
@@ -817,6 +822,11 @@ public class WorkerManager {
 		return (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Build);
 	}
 
+	public boolean isCombatWorker(Unit worker) {
+		if (worker == null) return false;
+		return (workerData.getWorkerJob(worker) == WorkerData.WorkerJob.Combat);
+	}
+
 	public int getNumMineralWorkers() 
 	{
 		return workerData.getNumMineralWorkers();	
@@ -838,4 +848,14 @@ public class WorkerManager {
 	{
 		return workerData;
 	}
+
+	public void moveWorkerTo(Unit worker, TilePosition target) {
+		if (worker == null) return;
+		//UnitType unitType = null;
+		WorkerMoveData workerMoveData = new WorkerMoveData(0, 0, target.toPosition());
+		workerData.setWorkerJob(worker, WorkerData.WorkerJob.Move, workerMoveData);
+		//commandUtil.move(worker, target.toPosition());
+	}
+
+
 }

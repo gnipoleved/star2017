@@ -21,7 +21,7 @@ public class WorkerData {
 		Repair,			///< 수리. Terran_SCV 만 가능
 		Move,			///< 이동
 		Scout, 			///< 정찰. Move와 다름. Mineral / Gas / Build 등의 다른 임무로 차출되지 않게 됨. 
-		Default 		///< 기본. 미설정 상태. 
+		Default 		///< 기본. 미설정 상태.
 	};
 	
 	// BasicBot 1.1 Patch Start ////////////////////////////////////////////////

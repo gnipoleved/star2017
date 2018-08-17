@@ -500,6 +500,17 @@ public class MyBotModule extends DefaultBWListener {
 			timeOverTestDuration = 70;
 			timeOverTestFrameCountLimit = 330;
 		}
+
+		else {
+			try {
+				int speed = Integer.parseInt(commandString);
+				if (speed > 42 || speed < 0) throw new RuntimeException();
+				Broodwar.setLocalSpeed(speed);
+				Broodwar.setFrameSkip(0);
+			} catch (Exception e) {
+
+			}
+		}
 	}
 
 	private void checkLostConditions() {

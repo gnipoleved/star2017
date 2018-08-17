@@ -15,6 +15,7 @@ public class UnitInfo {
 	private Position lastPosition;
 	private UnitType type;
 	private boolean completed;
+	private boolean firstSeen;
 
 	public UnitInfo()
 	{
@@ -25,6 +26,7 @@ public class UnitInfo {
 		lastPosition = Position.None;
 		type = UnitType.None;
 		completed = false;
+		this.firstSeen = false;
 	}
 
 	public UnitType getType() {
@@ -89,6 +91,10 @@ public class UnitInfo {
 
 	public void setCompleted(boolean completed) {
 		this.completed = completed;
+	}
+
+	public void setFirstSeen(boolean firstSeen) {
+		this.firstSeen = firstSeen;
 	}
 	
 	@Override

@@ -58,6 +58,8 @@ public class InformationManager {
 	/// Player - UnitData(각 Unit 과 그 Unit의 UnitInfo 를 Map 형태로 저장하는 자료구조) 를 저장하는 자료구조 객체
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 
+	public _TerranInfo terranInfo;
+
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
 		return instance;
@@ -97,11 +99,14 @@ public class InformationManager {
 		secondChokePoint.put(enemyPlayer, null);
 
 		updateChokePointAndExpansionLocation();
+
+		terranInfo = new _TerranInfo();
 		
 	}
 
 	/// Unit 및 BaseLocation, ChokePoint 등에 대한 정보를 업데이트합니다
 	public void update() {
+		terranInfo.init();
 		updateUnitsInfo();
 		// occupiedBaseLocation 이나 occupiedRegion 은 거의 안바뀌므로 자주 안해도 된다
 		if (MyBotModule.Broodwar.getFrameCount() % 120 == 0) {
@@ -113,10 +118,12 @@ public class InformationManager {
 	public void updateUnitsInfo() {
 		// update our units info
 		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
-			updateUnitInfo(unit);
+			//updateUnitInfo(unit);
+			terranInfo.updateEnemyUnitInfo(updateUnitInfo(unit));
 		}
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits()) {
-			updateUnitInfo(unit);
+			//updateUnitInfo(unit);
+			terranInfo.updateSelfUnitInfo(updateUnitInfo(unit));
 		}
 
 		// remove bad enemy units
@@ -129,18 +136,20 @@ public class InformationManager {
 	}
 
 	/// 해당 unit 의 정보를 업데이트 합니다 (UnitType, lastPosition, HitPoint 등)
-	public void updateUnitInfo(Unit unit) {
+	public UnitInfo updateUnitInfo(Unit unit) {
 		try {
 			if (!(unit.getPlayer() == selfPlayer || unit.getPlayer() == enemyPlayer)) {
-				return;
+				return null;
 			}
 
 			if (enemyRace == Race.Unknown && unit.getPlayer() == enemyPlayer) {
 				enemyRace = unit.getType().getRace();
 			}
-			unitData.get(unit.getPlayer()).updateUnitInfo(unit);
+			return unitData.get(unit.getPlayer()).updateUnitInfo(unit);
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			__Util.println(e);
+			throw e;
 		}
 	}
 
@@ -177,6 +186,11 @@ public class InformationManager {
 		}
 
 		unitData.get(unit.getPlayer()).removeUnit(unit);
+		
+		if (unit.getType().isNeutral()) {
+			return;
+		}
+		
 	}
 
 

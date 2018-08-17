@@ -171,8 +171,16 @@ public class BuildManager {
 							// ConstructionManager 가 건설 도중에 해당 위치에 건설이 어려워지면 다시
 							// ConstructionPlaceFinder 를 통해 건설 가능 위치를
 							// desiredPosition 주위에서 찾을 것이다
-							TilePosition desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation,
-									currentItem.seedLocationStrategy);
+//							TilePosition desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation,
+//									currentItem.seedLocationStrategy);
+							//ljw
+							TilePosition desiredPosition = null;
+							if (currentItem.fixed) {
+								if (MyBotModule.Broodwar.getUnitsOnTile(currentItem.seedLocation).size() > 0) desiredPosition = TilePosition.None;
+								else desiredPosition = currentItem.seedLocation;
+							} else {
+								desiredPosition = getDesiredPosition(t.getUnitType(), currentItem.seedLocation, currentItem.seedLocationStrategy);
+							}
 
 							//System.out.println("BuildManager " + currentItem.metaType.getUnitType().toString()
 							//		+ " desiredPosition " + desiredPosition.getX() + "," + desiredPosition.getY());
