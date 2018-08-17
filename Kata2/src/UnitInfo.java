@@ -16,6 +16,7 @@ public class UnitInfo {
 	private UnitType type;
 	private boolean completed;
 	private boolean firstSeen;
+	private UnitControlData unitControlData;
 
 	public UnitInfo()
 	{
@@ -27,6 +28,7 @@ public class UnitInfo {
 		type = UnitType.None;
 		completed = false;
 		this.firstSeen = false;
+		unitControlData = null;
 	}
 
 	public UnitType getType() {
@@ -95,6 +97,11 @@ public class UnitInfo {
 
 	public void setFirstSeen(boolean firstSeen) {
 		this.firstSeen = firstSeen;
+	}
+	
+	public UnitControlData getUnitControlData()
+	{
+		return unitControlData;
 	}
 	
 	@Override

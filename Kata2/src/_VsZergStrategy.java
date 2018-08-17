@@ -1,6 +1,6 @@
 import bwapi.Position;
 
-public class _VsTerranStrategy2 extends _TerranStrategy {
+public class _VsZergStrategy extends _TerranStrategy {
 	
 	private boolean 공격당한적있음; // true 일때,, 어느정도 북구 되면 닷 ㅣfalse로
 

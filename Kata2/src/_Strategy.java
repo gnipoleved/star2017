@@ -58,11 +58,11 @@ class _StrategySelector
 		if (InformationManager.Instance().enemyRace == Race.Random) {
 			terranStrategy = new _VsRandomStrategy();
 		} else if (InformationManager.Instance().enemyRace == Race.Terran) {
-			terranStrategy = new _VsTerranStrategy2();
-		} else if (InformationManager.Instance().enemyRace == Race.Protoss) {
-			terranStrategy = new _VsProtossStrategy2();
-		} else if (InformationManager.Instance().enemyRace == Race.Zerg) {
 			terranStrategy = new _VsTerranStrategy();
+		} else if (InformationManager.Instance().enemyRace == Race.Protoss) {
+			terranStrategy = new _VsProtossStrategy();
+		} else if (InformationManager.Instance().enemyRace == Race.Zerg) {
+			terranStrategy = new _VsZergStrategy();
 		}
 		
 		

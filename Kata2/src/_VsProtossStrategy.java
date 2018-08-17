@@ -1,6 +1,6 @@
 import bwapi.Position;
 
-public class _VsProtossStrategy2 extends _TerranStrategy {
+public class _VsProtossStrategy extends _TerranStrategy {
 
 	@Override
 	public void start() {

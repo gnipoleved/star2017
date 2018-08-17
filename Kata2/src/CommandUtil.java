@@ -25,11 +25,40 @@ public class CommandUtil {
 	}
 
 	public static void MOVE_BACK(Unit movingUnit, Unit from) {
-		int psx = movingUnit.getPosition().getX(), psy = movingUnit.getPosition().getY();
-		int pex = from.getPosition().getX(), pey = from.getPosition().getY();
-
-		int vectorX = pex-psx, vectorY = pey-psy;
-		commandUtil.move(movingUnit, new Position(psx-vectorX, psy-vectorY));
+		commandUtil.move(movingUnit, backwardPosition(movingUnit.getPosition(), from.getPosition()));
+	}
+	
+	// a 에서 b 를 볼때 a 가 b 뒤로 움직임
+	public static Position backwardPosition(Position a, Position b) {
+		int psx = a.getX(), psy = a.getY();
+		int pex = b.getX(), pey = b.getY();
+		int vectorX = pex - psx, vectorY = pey - psy;
+		return new Position(psx-vectorX/2, psy-vectorY/2);
+	}
+	
+	public static void MOVE_BACK_CON(UnitInfo movingUnit, Unit enemyUnit) {
+		UnitControlData ucd = movingUnit.getUnitControlData();
+		Position backwardPosition = backwardPosition(movingUnit.getUnit().getPosition(), enemyUnit.getPosition());
+		if (ucd == null) {
+			ucd = new UnitControlData();
+			ucd.setMoveControlData(backwardPosition);
+			commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+		} else {
+			if (ucd.actionType == ActionType.MOVE) {
+				if (ucd.targetPosition.equals(backwardPosition)) {
+					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5){
+						ucd = null;
+						movingUnit.getUnit().holdPosition();
+					}
+					else return;
+				}
+				ucd.setMoveControlData(backwardPosition);
+				commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+			} else {
+				ucd.setMoveControlData(backwardPosition);
+				commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+			}
+		}
 	}
 
 	public static void RIGHT_CLICK(Unit unit, Unit target){
@@ -401,4 +430,6 @@ public class CommandUtil {
 
 		return closestUnit;
 	}
+
+	
 }
