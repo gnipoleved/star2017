@@ -107,7 +107,7 @@ public class _TerranInfo {
     public int underAttackBuildingCnt = 0;
     public int underAttackUnitCnt = 0;
 
-    public int underAttackScvCnt = 0;
+    //public int underAttackScvCnt = 0;
 
     public Unit targetUnitWhenScouting = null;
     public int enemyWorkerAroundScouterCnt = 0;
@@ -124,6 +124,7 @@ public class _TerranInfo {
     public List<Unit> tanks = new ArrayList<>();
 
     public List<UnitInfo> self_marines = new ArrayList<>();
+    public List<UnitInfo> self_underAttackSCVS = new ArrayList<>();
 
 
     public List<UnitInfo> list_cmdCenter = new ArrayList<>();   public int limit_cmdCenter; // limit 값들은 각 strategy 에서 변경한다.
@@ -131,13 +132,14 @@ public class _TerranInfo {
     public List<UnitInfo> list_barracks = new ArrayList<>();    public int limit_barracks;
 
 
-
+    // 매 frame 먀다 초기화 해서 count 또는 add 하는 변수들
     public void init() {
         list_cmdCenter.clear();
         list_supplyDepot.clear();
         list_barracks.clear();
 
         self_marines.clear();
+        //self_underAttackSCVS.clear();	// 이건 매 frame 마다 초기화 히지 않고.. 한번 add 된 건 starategyManager 에서 underAttack 아닌 경우 해제 하는 걸로...
 
         idleCnt = new int[3000];
 
@@ -222,7 +224,7 @@ public class _TerranInfo {
         underAttackBuildingCnt = 0;
         underAttackUnitCnt = 0;
 
-        underAttackScvCnt = 0;
+        //underAttackScvCnt = 0;
 
         underAttackUnit = null;
         underAttackBuilding = null;
@@ -314,8 +316,8 @@ public class _TerranInfo {
                             } else {
 
                                 if (ui.getUnit().isUnderAttack()) {
-                                    underAttackScvCnt++;
-                                    // 여기에 under attack unit list 추가 하는 것도...
+                                    //underAttackScvCnt++;
+                                    self_underAttackSCVS.add(ui);
                                 }
 //                                if (state == defense_base) {
 ////									command.attackMove(ui.getUnit(), ui.getLastPosition());

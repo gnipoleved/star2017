@@ -192,7 +192,7 @@ public class WorkerManager {
 			// 건물의 경우 아무리 멀어도 무조건 수리. 일꾼 한명이 순서대로 수리
 			if (unit.getType().isBuilding() && unit.isCompleted() == true && unit.getHitPoints() < unit.getType().maxHitPoints())
 			{
-				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 0);
+				Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10*Config.TILE_SIZE);
 				setRepairWorker(repairWorker, unit);
 				break;
 			}
@@ -201,7 +201,7 @@ public class WorkerManager {
 			{
 				// SCV 는 수리 대상에서 제외. 전투 유닛만 수리하도록 한다
 				if (unit.getType() != UnitType.Terran_SCV) {
-					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 10 * Config.TILE_SIZE);
+					Unit repairWorker = chooseRepairWorkerClosestTo(unit.getPosition(), 7 * Config.TILE_SIZE);
 					setRepairWorker(repairWorker, unit);
 					break;
 				}
@@ -242,7 +242,9 @@ public class WorkerManager {
 			{
 				double dist = worker.getDistance(p);
 
-				if (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false && worker.isCarryingGas() == false ))
+				if (maxRange == 0) maxRange = 10000000;
+				
+				if (dist <= maxRange && (closestWorker == null || (dist < closestDist && worker.isCarryingMinerals() == false && worker.isCarryingGas() == false)))
 	            {
 					closestWorker = worker;
 	                dist = closestDist;
@@ -637,6 +639,13 @@ public class WorkerManager {
 
 		workerData.setWorkerJob(worker, WorkerData.WorkerJob.Combat, (Unit)null);
 	}
+	
+//	public void setBaseDefenceWorker(Unit worker)
+//	{
+//		if (worker == null) return;
+//
+//		workerData.setWorkerJob(worker, WorkerData.WorkerJob.Combat, (Unit)null);
+//	}
 
 	/// 모든 Combat 일꾼 유닛에 대해 임무를 해제합니다
 	public void stopCombat()

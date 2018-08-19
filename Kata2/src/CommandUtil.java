@@ -1,4 +1,5 @@
-import bwapi.Color;
+import java.util.List;
+
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitCommand;
@@ -24,8 +25,22 @@ public class CommandUtil {
 		commandUtil.move(unit, targetPosition);
 	}
 
-	public static void MOVE_BACK(Unit movingUnit, Unit from) {
-		commandUtil.move(movingUnit, backwardPosition(movingUnit.getPosition(), from.getPosition()));
+	public static void MOVE_BACK(Unit movingUnit, Unit from, List<Unit> unitsNear) {
+		Position newPosition = backwardPosition(movingUnit.getPosition(), from.getPosition());
+		if (newPosition.getX() <= 0 || newPosition.getX() >= 127 || newPosition.getY() <=0 || newPosition.getY() >= 127) {
+			//commandUtil.move(movingUnit, );
+			newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+		} else {
+			if (unitsNear != null) {
+				for(Unit unit : unitsNear) {
+					if (unit.getPosition().toTilePosition().equals(newPosition.toTilePosition())) {
+						newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+						break;
+					}
+				}
+			}
+		}
+		commandUtil.move(movingUnit, newPosition);
 	}
 	
 	// a 에서 b 를 볼때 a 가 b 뒤로 움직임

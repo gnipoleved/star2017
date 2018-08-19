@@ -1,4 +1,12 @@
-import static bwapi.UnitType.*;
+import static bwapi.UnitType.Terran_Barracks;
+import static bwapi.UnitType.Terran_Bunker;
+import static bwapi.UnitType.Terran_Marine;
+import static bwapi.UnitType.Terran_SCV;
+import static bwapi.UnitType.Terran_Supply_Depot;
+import static bwapi.UnitType.Terran_Vulture;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import bwapi.Position;
 import bwapi.Unit;
@@ -52,6 +60,38 @@ public class _VsTerranStrategy extends _TerranStrategy {
 
 	@Override
 	public void execute() {
+		
+		
+		if (terranInfo.self_underAttackSCVS.size() > 0) {
+			if (MyBotModule.Broodwar.getFrameCount() % 24 != 0) return;	// WokrerManager 처럼
+			
+			List<UnitInfo> tempUnderAttackScvList = new ArrayList<>();
+			for (UnitInfo underAttackScv : terranInfo.self_underAttackSCVS) {
+			
+//				if (underAttackScv.getUnit().getHitPoints() <= 10) {
+//					underAttackScv.getUnit().ga
+//				}
+				Unit scv = underAttackScv.getUnit();
+				
+				if (CommandUtil.IS_VALID_UNIT(scv)) {
+					if (scv.isUnderAttack()) {
+						tempUnderAttackScvList.add(underAttackScv);
+						
+						WorkerManager.Instance().setCombatWorker(scv);
+						Unit target = WorkerManager.Instance().getClosestEnemyUnitFromWorker(scv);
+						if (CommandUtil.IS_VALID_UNIT(target))
+						{
+							CommandUtil.ATTACK_UNIT(scv, target);
+						}
+					} else {
+						WorkerManager.Instance().setMineralWorker(scv);
+					}
+				}
+			}
+			terranInfo.self_underAttackSCVS = tempUnderAttackScvList;
+		}
+		
+		
 		if (getScvCount() < 8)
 		{
 			if (MyBotModule.Broodwar.self().minerals() >= 50) {
@@ -183,9 +223,9 @@ public class _VsTerranStrategy extends _TerranStrategy {
 						// scv 가 공격중인 경우
 						// marine 인 경우
 						if (enemyUnit.getType().equals(Terran_Marine) || enemyUnit.getType().equals(Terran_SCV)) {
-							if (marine.getUnit().getDistance(enemyUnit) <= CommandUtil.GET_ATTACK_RANGE(marine.getUnit(), enemyUnit) / 2) {	// 2 로 하면 아래 else 만 탐
+							if (marine.getUnit().getDistance(enemyUnit) <= CommandUtil.GET_ATTACK_RANGE(marine.getUnit(), enemyUnit) / 3.0) {	// 2 로 하면(double 캐스팅 안하면) 아래 else 만 탐
 								//CommandUtil.MOVE_BACK_CON(marine, enemyUnit);
-								CommandUtil.MOVE_BACK(marine.getUnit(), enemyUnit);
+								CommandUtil.MOVE_BACK(marine.getUnit(), enemyUnit, null);
 								attckUnitFlag = true;
 							} else { 
 								if (marine.getUnit().getDistance(enemyUnit) <= CommandUtil.GET_ATTACK_RANGE(marine.getUnit(), enemyUnit)) {
@@ -203,7 +243,7 @@ public class _VsTerranStrategy extends _TerranStrategy {
 		}
 
 		if (state == Common.attack) {
-			if ((MyBotModule.Broodwar.getFrameCount() - frameAttackStarted) % 15 != 0) return;
+			if ((MyBotModule.Broodwar.getFrameCount() - frameAttackStarted) % 10 != 0) return;
 
 			if (WorkerManager.Instance().isCombatWorker(conScv1)) { // TODO : PRIORITY LOW - 주위에 마린이 있는지 한번 확인해 보는 것도 좋을듯...
 				CommandUtil.ATTACK_MOVE(conScv1, targetAttackPos);
@@ -213,121 +253,84 @@ public class _VsTerranStrategy extends _TerranStrategy {
 			}
 
 			for (UnitInfo marine : terranInfo.self_marines) {
-//				boolean attckUnitFlag = false;
-				Unit targetUnit = null;
-				for (Unit enemyUnit : MyBotModule.Broodwar.enemy().getUnits()) {
+				Unit targetScv = null, targetMarine = null, targetVulture = null, targetBunker = null;
+				int targetScvDist = -1, targetMarineDist = -1, targetVultureDist = -1, targetBunkerDist = -1;
+				
+				Unit targetScvConstBunker = null;
+				
+				List<Unit> unitsNear = MyBotModule.Broodwar.getUnitsInRadius(marine.getUnit().getPosition(), 7*32);
+				
+				for (Unit unit : unitsNear) {
 					// Enemy 종족별 처리가 다르게
-					if (CommandUtil.IS_VALID_UNIT(enemyUnit)) {
+					if (CommandUtil.IS_VALID_UNIT(unit) && unit.getPlayer().equals(InformationManager.Instance().enemyPlayer)) {
 						// bunker 인 경우
 						// scv 가 공격중인 경우
 						// marine 인 경우
-						if (enemyUnit.getType().equals(Terran_Marine) || enemyUnit.getType().equals(Terran_SCV)) {
-//							if (marine.getUnit().getDistance(enemyUnit) <= CommandUtil.GET_ATTACK_RANGE(marine.getUnit(), enemyUnit) / 2) { // 일단 나누기 2로 해서 else 만 타게 한다.
-//								//CommandUtil.MOVE_BACK_CON(marine, enemyUnit);
-//								CommandUtil.MOVE_BACK(marine.getUnit(), enemyUnit);
-////								attckUnitFlag = true;
-//								if (targetUnit == null || targetUnit.getType().equals(Terran_SCV)) targetUnit = enemyUnit;
-//							} else { 
-								if (marine.getUnit().getDistance(enemyUnit) <= CommandUtil.GET_ATTACK_RANGE(marine.getUnit(), enemyUnit)) {
-								//if (marine.getUnit().getDistance(enemyUnit) <= 32*7) {
-//									CommandUtil.ATTACK_UNIT(marine.getUnit(), enemyUnit);
-									//attckUnitFlag = true;
-									if (targetUnit == null || targetUnit.getType().equals(Terran_SCV)) targetUnit = enemyUnit;
+						int curDist = marine.getUnit().getDistance(unit);
+						int flexibleDist = 7*32;
+						if (curDist < flexibleDist) {
+							if (unit.getType().equals(Terran_SCV)) {
+								if (targetScv == null || targetScvDist > curDist) {
+									targetScv = unit;
+									targetScvDist = curDist;
 								}
-//							}
+							} else if (unit.getType().equals(Terran_Marine)) {
+								if (targetMarine == null || targetMarineDist > curDist) {
+									targetMarine = unit;
+									targetMarineDist = curDist;
+								}
+							} else if (unit.getType().equals(Terran_Vulture)) {
+								if (targetVulture == null || targetVultureDist > curDist) {
+									targetVulture = unit;
+									targetVultureDist = curDist;
+								}
+							} else if (unit.getType().equals(Terran_Bunker)) {
+								if (unit.isBeingConstructed()) {
+									targetScvConstBunker = unit;
+								}
+								if (targetBunker == null || targetBunkerDist > curDist) {
+									targetBunker = unit;
+									targetBunkerDist = curDist;
+								}
+							}
 						}
 					}
 					
 					//if (attckUnitFlag) break;
 				}
 //				if (!attckUnitFlag) CommandUtil.ATTACK_MOVE(marine.getUnit(), targetAttackPos);
-				if (targetUnit == null) CommandUtil.ATTACK_MOVE(marine.getUnit(), targetAttackPos);
-				else CommandUtil.ATTACK_UNIT(marine.getUnit(), targetUnit);
+				//if (targetUnit == null) CommandUtil.ATTACK_MOVE(marine.getUnit(), targetAttackPos);
+				//else CommandUtil.ATTACK_UNIT(marine.getUnit(), targetUnit);
+				if (targetScvConstBunker != null) {
+					CommandUtil.ATTACK_UNIT(marine.getUnit(), targetScvConstBunker);
+				} else {
+					if (targetScv != null) {
+						if (targetScvDist < CommandUtil.GET_ATTACK_RANGE(marine.getUnit(), targetScv) / 3.0) {
+							CommandUtil.MOVE_BACK(marine.getUnit(), targetScv, unitsNear);
+						} else {
+							if (targetMarine != null) {
+								// 주위 병력을 계산해서 하는 방법도 있겠다
+								// 일단은 공격
+								CommandUtil.ATTACK_UNIT(marine.getUnit(), targetMarine);
+							} else {
+								CommandUtil.ATTACK_UNIT(marine.getUnit(), targetScv);
+							}
+						}
+					} else {
+						if (targetMarine != null) {
+							// 주위 병력을 계산해서 하는 방법도 있겠다
+							// 일단은 공격
+							CommandUtil.ATTACK_UNIT(marine.getUnit(), targetMarine);
+						} else {
+							CommandUtil.ATTACK_MOVE(marine.getUnit(), targetAttackPos);
+						}
+					}
+				}
 			}
 		}
 
-//		if (conScvCnt == 2 && Common.IsAlive(conScv1) && Common.IsAlive(conScv2)) {
-//			BaseLocation enemyBaseLocation = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().enemyPlayer);
-//			if (enemyBaseLocation == null) return;	// 정찰이 되지 않은 경우 이니 다음 frame 까지 기다리기 위해 return
-//			Position firstAssemblyArea = InformationManager.Instance().getFirstChokePoint(InformationManager.Instance().enemyPlayer).getCenter();
-//			Position targetAttackPos = enemyBaseLocation.getPosition();
-
-//			int cntAssembled = 0;
-//			for (UnitInfo marine : terranInfo.self_marines) {
-//
-//				if (Common.getDistanceSquared(firstAssemblyArea, marine.getUnit().getPosition()) < 64*64) cntAssembled++;
-//				if (state == Common.attack) {
-//					if (targetAttackPos != null) CommandUtil.ATTACK_MOVE(marine.getUnit(), targetAttackPos);
-//				} else {
-//					CommandUtil.ATTACK_MOVE(marine.getUnit(), firstAssemblyArea);
-//				}
-//			}
-//
-//			if (state == Common.initState) {
-//
-//				if (WorkerManager.Instance().isCombatWorker(conScv1)) {
-//					CommandUtil.MOVE(conScv1, firstAssemblyArea);
-//				}
-//				if (WorkerManager.Instance().isCombatWorker(conScv2)) {
-//					CommandUtil.MOVE(conScv2, firstAssemblyArea);
-//				}
-//
-//				if (cntAssembled >= 2) {
-//					state = Common.attack;
-//				}
-//			}
-//		}
 
 
-
-	}
-
-	@Deprecated
-	public void execute_old() {
-
-//		if (MyBotModule.Broodwar.getFrameCount() % 500 == 0) {
-//			__Util.println("\r\n>>> SCV");
-//			showOut(UnitType.Terran_SCV);
-//			
-//			__Util.println(">>> Supply");
-//			showOut(UnitType.Terran_Supply_Depot);
-//			__Util.println(">>>");
-//		}
-		
-//		if (MyBotModule.Broodwar.getFrameCount() > 500) return;
-		
-//		if (testFlag) showOut(UnitType.Terran_SCV);
-		
-//		if (testFlag) return;
-		
-		if (Common.WholeUnitCount(UnitType.Terran_SCV) < 8) {
-			//__Util.println("---");
-			//showOut(UnitType.Terran_SCV);
-//			if (testFlag) return;
-			bq.queueAsLowestPriority(UnitType.Terran_SCV);
-			testint++;
-			//showOut(UnitType.Terran_SCV);
-			//__Util.println("---");
-//			testFlag = true;
-			//return;
-		}
-		
-//		if (Common.WholeUnitCount(UnitType.Terran_Supply_Depot) < 1) {
-//			bq.queueAsFixedPosition(UnitType.Terran_Supply_Depot, mapTactic.SupplyDepot1Position(), true);
-//			return;
-//		}
-//		
-//		if (Common.WholeUnitCount(UnitType.Terran_Barracks) < 1) {
-//			bq.queueAsFixedPosition(UnitType.Terran_Supply_Depot, mapTactic.SupplyDepot2Position(), true);
-//			return;
-//		}
-//		
-//		if (Common.WholeUnitCount(UnitType.Terran_SCV) < 11) {
-//			bq.queueAsLowestPriority(UnitType.Terran_SCV);
-//			return;
-//		}
-		
-		
 
 	}
 
