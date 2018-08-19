@@ -60,7 +60,8 @@ class _StrategySelector
 		} else if (InformationManager.Instance().enemyRace == Race.Terran) {
 			terranStrategy = new _VsTerranStrategy();
 		} else if (InformationManager.Instance().enemyRace == Race.Protoss) {
-			terranStrategy = new _VsProtossStrategy();
+			//terranStrategy = new _VsProtossStrategy();
+			terranStrategy = new _VsTerranStrategy();
 		} else if (InformationManager.Instance().enemyRace == Race.Zerg) {
 			terranStrategy = new _VsZergStrategy();
 		}

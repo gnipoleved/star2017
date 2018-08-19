@@ -8,6 +8,7 @@ import static bwapi.UnitType.Terran_Vulture;
 import java.util.ArrayList;
 import java.util.List;
 
+import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -15,11 +16,12 @@ import bwta.BaseLocation;
 
 public class _VsTerranStrategy extends _TerranStrategy {
 
-
 	protected int conScvCnt = 0;
 	protected Unit conScv1, conScv2;
 	
 	protected int enemy_constBunkerScvAttackedCnt = 0;
+	
+	protected List<Unit> defenseWorkers;
 
 	protected Common.State state;
 	protected int frameAttackStarted;
@@ -30,6 +32,8 @@ public class _VsTerranStrategy extends _TerranStrategy {
 		terranInfo.limit_supplyDepot = 25;
 		terranInfo.limit_barracks = 8;
 
+		defenseWorkers = new ArrayList<>();
+		
 		state = Common.initState;
 		frameAttackStarted = 0;
 
@@ -91,7 +95,58 @@ public class _VsTerranStrategy extends _TerranStrategy {
 				}
 			}
 			terranInfo.self_underAttackSCVS = tempUnderAttackScvList;
+			return;
 		}
+		
+		if (terranInfo.underAttackBuilding != null) {
+			if (MyBotModule.Broodwar.getFrameCount() % 24 != 0) return;	// WokrerManager 처럼
+			
+			if (terranInfo.list_cmdCenter.get(0).getUnit().getDistance(terranInfo.underAttackBuilding.getPosition()) < 20*32) {
+				List<Unit> unitsNearAttack = MyBotModule.Broodwar.getUnitsInRadius(terranInfo.underAttackBuilding.getPosition(), 10*32);
+				Unit enemy = null;
+				for (Unit unit : unitsNearAttack) {
+					
+					if (CommandUtil.IS_VALID_UNIT(unit)) {
+						if (unit.getPlayer().equals(InformationManager.Instance().enemyPlayer)) {
+							enemy = unit;
+							break;
+						}
+					}
+					
+				}
+				if(CommandUtil.IS_VALID_UNIT(enemy)) {
+					int defCnt = 0;
+					List<Unit> tmp = new ArrayList<>();
+					for (Unit def : defenseWorkers) {
+						if (CommandUtil.IS_VALID_UNIT(def)) {
+							defCnt++;
+							tmp.add(def);
+						}
+					}
+					defenseWorkers = tmp;
+					
+					for(Unit unit: MyBotModule.Broodwar.getUnitsInRadius(enemy.getPosition(), 10*32)) {
+						if (defCnt < 1 && CommandUtil.IS_VALID_UNIT(unit) && unit.getPlayer().equals(InformationManager.Instance().selfPlayer) && unit.getType().equals(Terran_SCV)) {
+							defenseWorkers.add(unit);
+						}
+					}
+					
+					for (Unit def : defenseWorkers) {
+						if (def.getDistance(mapTactic.StartingPosition().toPosition()) > 10*32) {
+							WorkerManager.Instance().setMineralWorker(def);
+						} else {
+							WorkerManager.Instance().setCombatWorker(def);
+							CommandUtil.ATTACK_UNIT(def, enemy);
+						}
+					}
+				} else {
+					for (Unit def : defenseWorkers) {
+						WorkerManager.Instance().setMineralWorker(def);
+					}
+				}
+			}			
+			return;
+		} 
 		
 		
 		if (getScvCount() < 8)
