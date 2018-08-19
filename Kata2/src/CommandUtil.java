@@ -33,7 +33,8 @@ public class CommandUtil {
 		int psx = a.getX(), psy = a.getY();
 		int pex = b.getX(), pey = b.getY();
 		int vectorX = pex - psx, vectorY = pey - psy;
-		return new Position(psx-vectorX/2, psy-vectorY/2);
+		Position newPosition = new Position(psx-vectorX/2, psy-vectorY/2);
+		return newPosition;
 	}
 	
 	public static void MOVE_BACK_CON(UnitInfo movingUnit, Unit enemyUnit) {
