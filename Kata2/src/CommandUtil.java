@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Map;
 
 import bwapi.Position;
 import bwapi.Unit;
@@ -31,13 +32,17 @@ public class CommandUtil {
 			//commandUtil.move(movingUnit, );
 			newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
 		} else {
-			if (unitsNear != null) {
-				for(Unit unit : unitsNear) {
-					if (unit.getPosition().toTilePosition().equals(newPosition.toTilePosition())) {
-						newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
-						break;
-					}
-				}
+//			if (unitsNear != null) {
+//				for(Unit unit : unitsNear) {
+//					if (unit.getPosition().toTilePosition().equals(newPosition.toTilePosition())) {
+//						newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+//						break;
+//					}
+//				}
+//			}
+			Map<Integer, UnitInfo> map = InformationManager.Instance().getUnitAndUnitInfoMap(InformationManager.Instance().selfPlayer);
+			if (map.get(movingUnit.getID()).getLastPosition().equals(movingUnit.getPosition())) {
+				newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
 			}
 		}
 		commandUtil.move(movingUnit, newPosition);

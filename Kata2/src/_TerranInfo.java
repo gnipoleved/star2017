@@ -354,8 +354,27 @@ public class _TerranInfo {
         }
     }
 
+    
+    // 상대 종족이 terran 인 경우에만 쓰임
+    public int enemy_attackedCntBunkerConstScv = 0;
+    public Unit enemy_attackedBunkerConstScv = null;
 
     public void updateEnemyUnitInfo(UnitInfo eui) {
+    	
+    	if (eui == null || eui.getUnit().getPlayer() != MyBotModule.Broodwar.enemy()) return;
+    	
+    	if (eui.getType().isBuilding()) {
+    		if (eui.getUnit().getType() == Terran_Bunker) {
+    			if (eui.getUnit().isBeingConstructed()) {
+	    			Unit buildUnit = eui.getUnit().getBuildUnit();
+	    			if (buildUnit.isUnderAttack() && (enemy_attackedBunkerConstScv == null || !enemy_attackedBunkerConstScv.equals(buildUnit))) {
+	    				enemy_attackedBunkerConstScv = buildUnit;
+	    				enemy_attackedCntBunkerConstScv++;
+	    			}
+    			}
+    		}
+    	}
+    	
 //        try {
 //            if (eui == null || eui.getUnit().getPlayer() != MyBotModule.Broodwar.enemy()) return;
 //
