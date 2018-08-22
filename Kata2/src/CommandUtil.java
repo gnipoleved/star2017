@@ -82,9 +82,49 @@ public class CommandUtil {
 		int psx = a.getX(), psy = a.getY();
 		int pex = b.getX(), pey = b.getY();
 		double magnitude = Math.sqrt((psx-pex)*(psx-pex) + (psy-pey)*(psy-pey));
-		double vectorX = (pex - psx)/magnitude, vectorY = (pey - psy)/magnitude;
-		return new Position(psx-(int)(vectorX*factor), psy-(int)(vectorY*factor));
+		double unitVectorX = (pex - psx)/magnitude, unitVectorY = (pey - psy)/magnitude;
+		//Position newPosition = new Position(psx-(int)(vectorX*factor), psy-(int)(vectorY*factor));
+		double newPosX = psx-(unitVectorX*factor), newPosY = psy-(unitVectorY*factor);
+//		if (newPosition.getX() <= 0 * 32 || newPosition.getX() >= 127 * 32 || newPosition.getY() <= 0 * 32 || newPosition.getY() >= 127 * 32 || MyBotModule.Broodwar.isWalkable(newPosition.getX() / 32, newPosition.getY() / 32)) 
+//			newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+//		if (newPosX <= 0) {
+//			if (newPosY <= 0) {
+//				if (b.getX() > b.getY()) {
+//					newPosY = factor;
+//				}
+//			} else {
+//				
+//			}
+//		}
+		if (!IS_WALKABLE(newPosX, newPosY)) {
+			if (Math.abs(psx-pex) > Math.abs(psy-pey)) {
+				newPosY -= factor;
+				if (!IS_WALKABLE(newPosX, newPosY)) {
+					newPosY += factor;
+//					if (!IS_WALKABLE(newPosX, newPosY)){
+//						newPosX = pex+(unitVectorX*factor); 
+//						newPosY = pey+(unitVectorY*factor);
+//					}
+				}
+			} else {
+				newPosX -= factor;
+				if (!IS_WALKABLE(newPosX, newPosY)) {
+					newPosX += factor;
+//					if (!IS_WALKABLE(newPosX, newPosY)){
+//						newPosX = pex+(unitVectorX*factor); 
+//						newPosY = pey+(unitVectorY*factor);
+//					}
+				}
+			}
+		}
+		return new Position((int)newPosX, (int)newPosY);
 	}
+	
+	public static boolean IS_WALKABLE(double posX, double posY) {
+		if (posX <= 0*32 || posX >= 127*32 || posY <= 0*32 || posY >= 127*32 || MyBotModule.Broodwar.isWalkable((int)(posX/8), (int)(posY/8))) return false;
+		else return true;
+	}
+	
 	
 	public static void MOVE_BACK_CON(UnitInfo movingUnit, Unit enemyUnit) {
 		UnitControlData ucd = movingUnit.getUnitControlData();
@@ -97,7 +137,7 @@ public class CommandUtil {
 		} else {
 			if (ucd.actionType == ActionType.MOVE) {
 				if (ucd.targetPosition.equals(backwardPosition)) {
-					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5 && ucd.actionGivenFrame - MyBotModule.Broodwar.getFrameCount() > 15){
+					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5 && MyBotModule.Broodwar.getFrameCount() - ucd.actionGivenFrame > 15){
 						movingUnit.getUnit().holdPosition();
 						ucd.clearControlData();
 					}
