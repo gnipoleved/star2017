@@ -1,13 +1,7 @@
 import java.util.List;
 import java.util.Map;
 
-import bwapi.Position;
-import bwapi.Unit;
-import bwapi.UnitCommand;
-import bwapi.UnitCommandType;
-import bwapi.UnitType;
-import bwapi.UpgradeType;
-import bwapi.WeaponType;
+import bwapi.*;
 
 public class CommandUtil {
 
@@ -26,12 +20,37 @@ public class CommandUtil {
 		commandUtil.move(unit, targetPosition);
 	}
 
+	public static void MOVE_BACK_다시(Unit movingUnit, Unit from, List<Unit> unitsNear) {
+		Unit nearestMarine = null;
+		int nearestMarineDist = 1000000;
+		for (Unit unit : unitsNear) {
+			if (IS_VALID_UNIT(unit)) {
+				int curFromDist = unit.getDistance(from);
+				if (unit.getPlayer().equals(InformationManager.Instance().selfPlayer)) {
+					if (unit.getType().equals(UnitType.Terran_Marine)) {
+						if (nearestMarineDist > curFromDist) {
+							nearestMarine = unit;
+							nearestMarineDist = curFromDist;
+						}
+					}
+				}
+			}
+		}
+		if (nearestMarine != null) {
+
+		}
+	}
+
 	public static void MOVE_BACK(Unit movingUnit, Unit from, List<Unit> unitsNear) {
 		Position newPosition = backwardPosition(movingUnit.getPosition(), from.getPosition());
-		if (newPosition.getX() <= 0 || newPosition.getX() >= 127 || newPosition.getY() <=0 || newPosition.getY() >= 127) {
-			//commandUtil.move(movingUnit, );
+		if (MyBotModule.Broodwar.self().getRace().equals(Race.Terran)) {
 			newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
 		} else {
+
+			if (newPosition.getX() <= 0 * 32 || newPosition.getX() >= 127 * 32 || newPosition.getY() <= 0 * 32 || newPosition.getY() >= 127 * 32 || MyBotModule.Broodwar.isWalkable(newPosition.getX() / 32, newPosition.getY() / 32)) {
+				//commandUtil.move(movingUnit, );
+				newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+			} else {
 //			if (unitsNear != null) {
 //				for(Unit unit : unitsNear) {
 //					if (unit.getPosition().toTilePosition().equals(newPosition.toTilePosition())) {
@@ -40,9 +59,10 @@ public class CommandUtil {
 //					}
 //				}
 //			}
-			Map<Integer, UnitInfo> map = InformationManager.Instance().getUnitAndUnitInfoMap(InformationManager.Instance().selfPlayer);
-			if (map.get(movingUnit.getID()).getLastPosition().equals(movingUnit.getPosition())) {
-				newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+//			Map<Integer, UnitInfo> map = InformationManager.Instance().getUnitAndUnitInfoMap(InformationManager.Instance().selfPlayer);
+//			if (map.get(movingUnit.getID()).getLastPosition().equals(movingUnit.getPosition())) {
+//				newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
+//			}
 			}
 		}
 		commandUtil.move(movingUnit, newPosition);
@@ -50,36 +70,73 @@ public class CommandUtil {
 	
 	// a 에서 b 를 볼때 a 가 b 뒤로 움직임
 	public static Position backwardPosition(Position a, Position b) {
+		int factor = 2;
+		if (MyBotModule.Broodwar.self().getRace().equals(Race.Protoss)) factor = 1;
 		int psx = a.getX(), psy = a.getY();
 		int pex = b.getX(), pey = b.getY();
 		int vectorX = pex - psx, vectorY = pey - psy;
-		return new Position(psx-vectorX/2, psy-vectorY/2);
+		return new Position(psx-vectorX/factor, psy-vectorY/factor);
+	}
+
+	public static Position backwardPosition(Position a, Position b, int factor) {
+		int psx = a.getX(), psy = a.getY();
+		int pex = b.getX(), pey = b.getY();
+		double magnitude = Math.sqrt((psx-pex)*(psx-pex) + (psy-pey)*(psy-pey));
+		double vectorX = (pex - psx)/magnitude, vectorY = (pey - psy)/magnitude;
+		return new Position(psx-(int)(vectorX*factor), psy-(int)(vectorY*factor));
 	}
 	
 	public static void MOVE_BACK_CON(UnitInfo movingUnit, Unit enemyUnit) {
 		UnitControlData ucd = movingUnit.getUnitControlData();
-		Position backwardPosition = backwardPosition(movingUnit.getUnit().getPosition(), enemyUnit.getPosition());
+		Position backwardPosition = backwardPosition(movingUnit.getUnit().getPosition(), enemyUnit.getPosition(), 118);
 		if (ucd == null) {
 			ucd = new UnitControlData();
 			ucd.setMoveControlData(backwardPosition);
+			movingUnit.setUnitControlData(ucd);
 			commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
 		} else {
 			if (ucd.actionType == ActionType.MOVE) {
 				if (ucd.targetPosition.equals(backwardPosition)) {
-					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5){
-						ucd = null;
+					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5 && ucd.actionGivenFrame - MyBotModule.Broodwar.getFrameCount() > 15){
 						movingUnit.getUnit().holdPosition();
+						ucd.clearControlData();
 					}
-					else return;
+				} else {
+					ucd.setMoveControlData(backwardPosition);
+					commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
 				}
-				ucd.setMoveControlData(backwardPosition);
-				commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
 			} else {
 				ucd.setMoveControlData(backwardPosition);
 				commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
 			}
 		}
 	}
+
+	public static void ATTACK_UNIT_CON(UnitInfo attackingUnit, Unit enemyUnit) {
+		UnitControlData ucd = attackingUnit.getUnitControlData();
+		if (ucd == null) {
+			ucd = new UnitControlData();
+			ucd.setAttackUnitControlData(enemyUnit);
+			attackingUnit.setUnitControlData(ucd);
+			commandUtil.attackUnit(attackingUnit.getUnit(), ucd.targetUnit);
+		} else {
+			if (ucd.actionType == ActionType.ATTACK_UNIT) {
+				if (ucd.targetUnit.equals(enemyUnit) == false) {
+					ucd.setAttackUnitControlData(enemyUnit);
+					commandUtil.attackUnit(attackingUnit.getUnit(), ucd.targetUnit);
+				}
+			} else if (ucd.actionType == ActionType.MOVE) {
+				if (ucd.targetPosition.getDistance(attackingUnit.getUnit().getPosition()) <= 13 || MyBotModule.Broodwar.getFrameCount() - ucd.actionGivenFrame >= 25) {
+					ucd.setAttackUnitControlData(enemyUnit);
+					commandUtil.attackUnit(attackingUnit.getUnit(), ucd.targetUnit);
+				}
+			} else {
+				ucd.setAttackUnitControlData(enemyUnit);
+				commandUtil.attackUnit(attackingUnit.getUnit(), ucd.targetUnit);
+			}
+		}
+	}
+
 
 	public static void RIGHT_CLICK(Unit unit, Unit target){
 		commandUtil.rightClick(unit, target);

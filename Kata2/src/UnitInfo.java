@@ -98,7 +98,11 @@ public class UnitInfo {
 	public void setFirstSeen(boolean firstSeen) {
 		this.firstSeen = firstSeen;
 	}
-	
+
+	public void setUnitControlData(UnitControlData ucd) {
+		this.unitControlData = ucd;
+	}
+
 	public UnitControlData getUnitControlData()
 	{
 		return unitControlData;

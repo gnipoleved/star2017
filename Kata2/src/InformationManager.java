@@ -278,6 +278,37 @@ public class InformationManager {
 				}
 			}
 
+			if (enemyStartLocationFound == false) {
+				for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
+					if (CommandUtil.IS_VALID_UNIT(unit)) {
+
+					}
+				}
+			}
+
+			if (enemyStartLocationFound == false) {
+//				for (Chokepoint chokepoint : BWTA.getChokepoints()) {
+//					BaseLocation startLocation = BWTA.getNearestBaseLocation(chokepoint.getCenter());
+//					if (existsPlayerBuildingInRegion(BWTA.getRegion(chokepoint.getCenter()), enemyPlayer)) {
+//						enemyStartLocationFound = true;
+//						mainBaseLocations.put(enemyPlayer, startLocation);
+//						mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
+//					}
+//					if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition())) {
+//						// if it's explored, increment
+//						exploredStartLocations++;
+//					} else {
+//						// otherwise set it as unexplored base
+//						unexplored = startLocation;
+//					}
+//				}
+//				for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
+//					if (CommandUtil.IS_VALID_UNIT(unit)) {
+//
+//					}
+//				}
+			}
+
 			// if we've explored every start location except one, it's the enemy
 			if (!enemyStartLocationFound && exploredStartLocations == ((int) BWTA.getStartLocations().size() - 1)) {
 				enemyStartLocationFound = true;

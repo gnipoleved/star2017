@@ -1,5 +1,6 @@
 import bwapi.Position;
 import bwapi.Unit;
+import bwapi.UnitType;
 
 public class __EventLogger implements __IEventLogger {
 	

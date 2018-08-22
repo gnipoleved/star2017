@@ -19,8 +19,6 @@ public class _VsTerranStrategy extends _TerranStrategy {
 	protected int conScvCnt = 0;
 	protected Unit conScv1, conScv2;
 	
-	protected int enemy_constBunkerScvAttackedCnt = 0;
-	
 	protected List<Unit> defenseWorkers;
 
 	protected Common.State state;
@@ -328,7 +326,9 @@ public class _VsTerranStrategy extends _TerranStrategy {
 					if (index < terranInfo.self_marines.size()) offense = terranInfo.self_marines.get(index).getUnit();
 					else if (index == terranInfo.self_marines.size()) offense = conScv1;
 					else offense = conScv2;
-					
+
+					if (CommandUtil.IS_VALID_UNIT(offense)==false) continue;
+
 					List<Unit> unitsNear = MyBotModule.Broodwar.getUnitsInRadius(offense.getPosition(), 7*32);	
 					for (Unit unit : unitsNear) {
 						// Enemy 종족별 처리가 다르게
@@ -367,7 +367,8 @@ public class _VsTerranStrategy extends _TerranStrategy {
 						}
 					}
 	
-					if (index <= terranInfo.self_marines.size()) {	// marine 인 경우
+					//if (index <= terranInfo.self_marines.size()) {	// marine 인 경우
+					if (offense.getType().equals(Terran_Marine)) { // marine 인 경우
 						if (targetScvConstBunker != null) {
 							CommandUtil.ATTACK_UNIT(offense, targetScvConstBunker);
 						} else {
@@ -439,7 +440,7 @@ public class _VsTerranStrategy extends _TerranStrategy {
 			}
 			if (closestMarine == null) CommandUtil.MOVE(scv, firstAssemblyArea);
 			else {
-				if (closestDist <= CommandUtil.GET_ATTACK_RANGE(closestMarine.getUnit(), scv) / .75) {
+				if (closestDist <= CommandUtil.GET_ATTACK_RANGE(closestMarine.getUnit(), scv) * .75) {
 					CommandUtil.ATTACK_MOVE(scv, targetUnit.getPosition());
 				} else {
 					CommandUtil.MOVE(scv, closestMarine.getUnit().getPosition());

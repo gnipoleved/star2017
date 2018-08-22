@@ -235,6 +235,12 @@ public class _TerranInfo {
         comsatStations.clear();
 
         tanks.clear();
+
+        enemy_listProbe.clear();
+        enemy_listZealot.clear();
+        enemy_listDragon.clear();
+
+        //enemy_listPhoton.clear();
     }
 
     public void updateSelfUnitInfo(UnitInfo ui) {
@@ -359,6 +365,11 @@ public class _TerranInfo {
     public int enemy_attackedCntBunkerConstScv = 0;
     public Unit enemy_attackedBunkerConstScv = null;
 
+    public List<UnitInfo> enemy_listProbe = new ArrayList<>();
+    public List<UnitInfo> enemy_listZealot = new ArrayList<>();
+    public List<UnitInfo> enemy_listDragon = new ArrayList<>();
+
+
     public void updateEnemyUnitInfo(UnitInfo eui) {
     	
     	if (eui == null || eui.getUnit().getPlayer() != MyBotModule.Broodwar.enemy()) return;
@@ -373,7 +384,13 @@ public class _TerranInfo {
 	    			}
     			}
     		}
-    	}
+    	} else {
+            if (eui.getUnit().isCompleted()) {
+                if (eui.getUnit().getType().equals(Protoss_Probe)) { enemy_listProbe.add(eui);}
+                else if (eui.getUnit().getType().equals(Protoss_Zealot)) { enemy_listZealot.add(eui);}
+                else if (eui.getUnit().getType().equals(Protoss_Dragoon)) { enemy_listDragon.add(eui);}
+            }
+        }
     	
 //        try {
 //            if (eui == null || eui.getUnit().getPlayer() != MyBotModule.Broodwar.enemy()) return;
