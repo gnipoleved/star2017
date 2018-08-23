@@ -17,6 +17,7 @@ public class UnitInfo {
 	private boolean completed;
 	private boolean firstSeen;
 	private UnitControlData unitControlData;
+//	private Unit targetUnit;
 
 	public UnitInfo()
 	{
@@ -29,6 +30,7 @@ public class UnitInfo {
 		completed = false;
 		this.firstSeen = false;
 		unitControlData = null;
+//		this.targetUnit = null;
 	}
 
 	public UnitType getType() {
@@ -99,6 +101,10 @@ public class UnitInfo {
 		this.firstSeen = firstSeen;
 	}
 
+	public boolean isFirstSeen() {
+		return firstSeen;
+	}
+
 	public void setUnitControlData(UnitControlData ucd) {
 		this.unitControlData = ucd;
 	}
@@ -107,6 +113,9 @@ public class UnitInfo {
 	{
 		return unitControlData;
 	}
+
+//	public Unit getTargetUnit() { return targetUnit;}
+//	public void setTargetUnit(Unit targetUnit) {this.targetUnit = targetUnit;}
 	
 	@Override
     public boolean equals(Object o) {

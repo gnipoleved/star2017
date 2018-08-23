@@ -478,7 +478,9 @@ public class WorkerManager {
 				&& (workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Move 
 				&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Idle 
 				&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Build
-				&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Scout))
+				&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Scout
+				&& workerData.getWorkerJob(unit) != WorkerData.WorkerJob.Combat
+			))
 			{
 				// if it is a new closest distance, set the pointer
 				double distance = unit.getDistance(buildingPosition.toPosition());

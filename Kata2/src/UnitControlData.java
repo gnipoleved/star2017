@@ -3,16 +3,22 @@ import bwapi.Unit;
 
 public class UnitControlData {
 
+//    public Position orginalPosition;
 	public int actionGivenFrame;
     public ActionType actionType;
     public Position targetPosition;
     public Unit targetUnit;
-    
+
+    public void setMoveControlData(Position targetPosition, Unit targetUnit) {
+//        this.orginalPosition =
+        this.actionGivenFrame = MyBotModule.Broodwar.getFrameCount();
+        this.actionType = ActionType.MOVE;
+        this.targetPosition = targetPosition;
+        this.targetUnit = targetUnit;
+    }
+
 	public void setMoveControlData(Position targetPosition) {
-		this.actionGivenFrame = MyBotModule.Broodwar.getFrameCount();
-		this.actionType = ActionType.MOVE;
-		this.targetPosition = targetPosition;
-		this.targetUnit = null;
+		setMoveControlData(targetPosition, null);
 	}
 
 	public void setAttackUnitControlData(Unit target) {

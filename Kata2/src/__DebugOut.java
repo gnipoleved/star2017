@@ -85,7 +85,8 @@ public class __DebugOut {
 	}
 	
 	private static String makeMillisFormatted(long currentMillis) {
-		return "[" + __DateUtil.TO_STRING(new Date(currentMillis), "yyyy-MM-dd HH:mm:ss") + "] ";
+		//return "[" + __DateUtil.TO_STRING(new Date(currentMillis), "yyyy-MM-dd HH:mm:ss") + "] ";
+		return "[" + MyBotModule.Broodwar.getFrameCount() + "] ";
 	}
 	
 	

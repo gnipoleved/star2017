@@ -18,6 +18,7 @@ public class _VsTerranStrategy extends _TerranStrategy {
 
 	protected int conScvCnt = 0;
 	protected Unit conScv1, conScv2;
+
 	
 	protected List<Unit> defenseWorkers;
 
@@ -149,12 +150,16 @@ public class _VsTerranStrategy extends _TerranStrategy {
 		
 		if (getScvCount() < 8)
 		{
-			if (MyBotModule.Broodwar.self().minerals() >= 50) {
-				if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
-					buildScvInHQ();
-					return;
-				}
-			}
+try {
+	if (MyBotModule.Broodwar.self().minerals() >= 50) {
+		if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
+			buildScvInHQ();
+			return;
+		}
+	}
+} catch (Exception e){
+	__Util.println(e);
+}
 
 			if (conScvCnt == 0 && getScvCount() == 7 && terranInfo.list_cmdCenter.get(0).getUnit().getRemainingTrainTime() < 180) {
 				for (Unit scv : WorkerManager.Instance().getWorkerData().getWorkers()) {

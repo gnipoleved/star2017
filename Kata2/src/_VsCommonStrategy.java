@@ -1,6 +1,5 @@
-import bwapi.Position;
-import bwapi.Unit;
-import bwapi.UnitType;
+import bwapi.*;
+import bwta.BWTA;
 import bwta.BaseLocation;
 
 import java.util.ArrayList;
@@ -12,11 +11,15 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 
 	protected int conScvCnt = 0;
 	protected Unit conScv1, conScv2;
+	protected List<Unit> bdgAttackers = new ArrayList<>();
+	protected List<Unit> workerAttackers = new ArrayList<>();
 
 	protected List<Unit> defenseWorkers;
 
 	protected Common.State state;
 	protected int frameAttackStarted;
+
+	public static int STRATEGY_MODE = 1; // 0=only marine, 1=bionic, 2=vulture
 
 	@Override
 	public void start() {
@@ -58,6 +61,9 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 
 	@Override
 	public void execute() {
+
+//		if (terranInfo.scvCnt >= 18) Config.WorkersPerRefinery = 3;
+//		else Config.WorkersPerRefinery = 1;
 
 		if (terranInfo.self_underAttackSCVS.size() > 0) {
 			if (MyBotModule.Broodwar.getFrameCount() % 24 != 0) return;	// WokrerManager 처럼
@@ -139,6 +145,49 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 			return;
 		}
 
+		__Util.println("^_______________________________________________________________________^");
+		for (UnitInfo enemyBuilding : terranInfo.enemy_listBuildings) {
+
+			if (!CommandUtil.IS_VALID_UNIT(enemyBuilding.getUnit())) continue;
+			__Util.println(enemyBuilding.getUnit().getType() + ":(" + enemyBuilding.getUnit().getID() + ")");
+			if (BWTA.getNearestBaseLocation(enemyBuilding.getUnit().getPosition()).equals(MyBotModule.Broodwar.self().getStartLocation())) {
+				for (int index = 0; index < 1; index++) {
+					if (!CommandUtil.IS_VALID_UNIT(bdgAttackers.get(index))) {
+						Unit worker = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(Terran_Supply_Depot, enemyBuilding.getUnit().getPosition().toTilePosition(), false, 0);
+						WorkerManager.Instance().setCombatWorker(worker);
+						bdgAttackers.set(index, worker);
+					}
+				}
+				for (int index = 0; index < 2; index++) {
+					if (!CommandUtil.IS_VALID_UNIT(workerAttackers.get(index))) {
+						Unit worker = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(Terran_Supply_Depot, enemyBuilding.getUnit().getPosition().toTilePosition(), false, 0);
+						WorkerManager.Instance().setCombatWorker(worker);
+						workerAttackers.set(index, worker);
+					}
+				}
+			}
+		}
+
+		if (terranInfo.enemy_listBuildings.size() > 0) {
+			if (!CommandUtil.IS_VALID_UNIT(terranInfo.enemy_listBuildings.get(0).getUnit())) {
+				for (Unit bdgAttacker : bdgAttackers) {
+					CommandUtil.ATTACK_UNIT(bdgAttacker, terranInfo.enemy_listBuildings.get(0).getUnit());
+				}
+				for (Unit workerAttacker : workerAttackers) {
+					Unit target = WorkerManager.Instance().getClosestEnemyUnitFromWorker(workerAttacker);
+					if (CommandUtil.IS_VALID_UNIT(target)) {
+						CommandUtil.ATTACK_UNIT(workerAttacker, target);
+					}
+				}
+			}
+		} else {
+			for (Unit bdgAttacker : bdgAttackers) {
+				WorkerManager.Instance().setMineralWorker(bdgAttacker);
+			}
+			for (Unit workerAttacker : workerAttackers) {
+				WorkerManager.Instance().setMineralWorker(workerAttacker);
+			}
+		}
 
 		if (getScvCount() < 8)
 		{
@@ -207,15 +256,49 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 		}
 
 		// marine 생산 // return 로직 없음.
-		if (terranInfo.barracksCnt >= 1) {
-			Unit barrack1 = terranInfo.list_barracks.get(0).getUnit();
-			if (MyBotModule.Broodwar.self().minerals() >= 50 && barrack1.getTrainingQueue().isEmpty()) {
-				barrack1.train(Terran_Marine);
+//		if (terranInfo.barracksCnt >= 1) {
+//			Unit barrack1 = terranInfo.list_barracks.get(0).getUnit();
+//			if (MyBotModule.Broodwar.self().minerals() >= 50 && barrack1.getTrainingQueue().isEmpty()) {
+//				barrack1.train(Terran_Marine);
+//			}
+//			if (terranInfo.barracksCnt == 2) {
+//				Unit barrack2 = terranInfo.list_barracks.get(1).getUnit();
+//				if (MyBotModule.Broodwar.self().minerals() >= 50 && barrack2.getTrainingQueue().isEmpty()) {
+//					barrack2.train(Terran_Marine);
+//				}
+//			}
+//		}
+
+		for (UnitInfo barrack : terranInfo.list_barracks) {
+			if (MyBotModule.Broodwar.self().minerals() >= 50 && barrack.getUnit().getTrainingQueue().isEmpty()) {
+				//barrack.getUnit().train(Terran_Marine);
+				if (STRATEGY_MODE == 1) {
+					int medicUnitCnt = terranInfo.medicCnt + terranInfo.medicConstCnt;
+					int marineUnitCnt = terranInfo.marineCnt + terranInfo.marineConstCnt;
+					//double ratioMeMa = (marineUnitCnt == 0) ? 100.0 : ((double)medicUnitCnt/(double)(medicUnitCnt + marineUnitCnt)) * 100.0;
+					//__Util.println("MEMA _____________________________:" + ratioMeMa);
+					double ratioMeMa = 100.0;
+//					if (!(terranInfo.academyCnt == 0 || marineUnitCnt < 6)) ratioMeMa = ((double)medicUnitCnt/(double)(medicUnitCnt + marineUnitCnt)) * 100.0;
+					if (terranInfo.academyCnt == 0) ratioMeMa = 100.0;
+					else {
+						if (marineUnitCnt < 6) ratioMeMa = 100.0;
+						else ratioMeMa = ((double)medicUnitCnt/(double)(medicUnitCnt + marineUnitCnt)) * 100.0;
+					}
+
+					if (ratioMeMa >= 19.8) {
+						barrack.getUnit().train(Terran_Marine);
+						terranInfo.marineConstCnt++;
+					} else {
+						barrack.getUnit().train(Terran_Medic);
+					}
+				}
 			}
-			if (terranInfo.barracksCnt == 2) {
-				Unit barrack2 = terranInfo.list_barracks.get(1).getUnit();
-				if (MyBotModule.Broodwar.self().minerals() >= 50 && barrack2.getTrainingQueue().isEmpty()) {
-					barrack2.train(Terran_Marine);
+		}
+
+		if (terranInfo.list_supplyDepot.size() >= 2 && getScvCount() < 20*terranInfo.list_cmdCenter.size() && (terranInfo.marineCnt > 7 || terranInfo.vultureCnt > 3)) {
+			if (MyBotModule.Broodwar.self().minerals() >= 50) {
+				if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
+					buildScvInHQ();
 				}
 			}
 		}
@@ -258,12 +341,122 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 		}
 
 		if (state == Common.initState || state == Common.attack) {
-			
+
 			if (unitControl(firstAssemblyArea, targetAttackPos, range)) return;
 
 		}
 
+		//__Util.println(">>>>>>>>>>>>>>>>>>>>>>>>>>> " + (terranInfo.supplyProvidedCnt + terranInfo.supplyProvidedConstCnt - (terranInfo.supplyOccupiedCnt + terranInfo.supplyOccupiedConstCnt)));
 
+		if (STRATEGY_MODE == 1 && BionicStrategy()) return;
+	}
+
+	protected boolean BionicStrategy() {
+		Config.WorkersPerRefinery = 3;
+
+		if (terranInfo.barracksCnt == 2) {
+			//if (getScvCount() + terranInfo.marineCnt + terranInfo.ma)
+			if (supplyRemaining() <= 2*2) {
+				if (MyBotModule.Broodwar.self().minerals() >= 100 && Common.CountInBuildQ(Terran_Supply_Depot) == 0 && Common.CountInConstQ(Terran_Supply_Depot) == 0 && terranInfo.supplyDepotConstCnt == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Supply_Depot, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+					return true;
+				}
+			}
+		} else if (terranInfo.barracksCnt == 3) {
+			if (supplyRemaining() <= 2*3) {
+				if (MyBotModule.Broodwar.self().minerals() >= 100 && Common.CountInBuildQ(Terran_Supply_Depot) == 0 && Common.CountInConstQ(Terran_Supply_Depot) == 0 && terranInfo.supplyDepotConstCnt == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Supply_Depot, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+					return true;
+				}
+			}
+		} else if (terranInfo.barracksCnt == 4) {
+			if (supplyRemaining() <= 2*7) {
+				if (MyBotModule.Broodwar.self().minerals() >= 100 && Common.CountInBuildQ(Terran_Supply_Depot) == 0 && Common.CountInConstQ(Terran_Supply_Depot) == 0 && terranInfo.supplyDepotConstCnt == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Supply_Depot, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+					return true;
+				}
+			}
+		} else if (terranInfo.barracksCnt >= 5) {
+			if (supplyRemaining() <= 2*8) {
+				if (MyBotModule.Broodwar.self().minerals() >= 100 && Common.CountInBuildQ(Terran_Supply_Depot) == 0 && Common.CountInConstQ(Terran_Supply_Depot) == 0 && terranInfo.supplyDepotConstCnt == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Supply_Depot, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+					return true;
+				}
+			}
+		}
+
+		if (terranInfo.barracksCnt >= 2 && terranInfo.supplyDepotCnt + terranInfo.supplyDepotConstCnt >= 2) {
+			if (terranInfo.supplyProvidedCnt + terranInfo.supplyProvidedConstCnt >= 16 * 2) {
+				if (MyBotModule.Broodwar.self().minerals() >= 150 && Common.CountInBuildQ(Terran_Academy) == 0 && Common.CountInConstQ(Terran_Academy) == 0 && terranInfo.academyCnt + terranInfo.academyConstCnt == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Academy, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+					return true;
+				}
+			}
+
+			if (terranInfo.supplyProvidedCnt + terranInfo.supplyProvidedConstCnt >= 16 * 2 && terranInfo.academyCnt + terranInfo.academyConstCnt > 0) {
+				if (MyBotModule.Broodwar.self().minerals() >= 100 && Common.CountInBuildQ(Terran_Refinery) == 0 && Common.CountInConstQ(Terran_Refinery) == 0 && terranInfo.refineryCnt + terranInfo.refineryConstCnt == 0) {
+					BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Refinery, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+					return true;
+				}
+			}
+
+
+			if (terranInfo.barracksCnt < 5) {
+				if (terranInfo.marineConstCnt == terranInfo.barracksCnt && terranInfo.barracksConstCnt == 0 && Common.CountInBuildQ(Terran_Barracks) == 0 && Common.CountInConstQ(Terran_Barracks) == 0) {
+					if (MyBotModule.Broodwar.self().minerals() >= 250) {
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Barracks, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+						return true;
+					}
+				}
+			} else if (terranInfo.barracksCnt < 7) {
+				if (terranInfo.marineConstCnt == terranInfo.barracksCnt && terranInfo.barracksConstCnt == 0 && Common.CountInBuildQ(Terran_Barracks) == 0 && Common.CountInConstQ(Terran_Barracks) == 0) {
+					if (MyBotModule.Broodwar.self().minerals() >= 400) {
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Barracks, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+						return true;
+					}
+				}
+			} else if (terranInfo.barracksCnt < 9) {
+				if (terranInfo.marineConstCnt == terranInfo.barracksCnt && terranInfo.barracksConstCnt == 0 && Common.CountInBuildQ(Terran_Barracks) == 0 && Common.CountInConstQ(Terran_Barracks) == 0) {
+					if (MyBotModule.Broodwar.self().minerals() >= 600) {
+						BuildManager.Instance().buildQueue.queueAsHighestPriority(Terran_Barracks, BuildOrderItem.SeedPositionStrategy.MainBaseLocation, false);
+						return true;
+					}
+				}
+			}
+
+			if (terranInfo.academyCnt > 0) {
+				if (!MyBotModule.Broodwar.self().hasResearched(TechType.Stim_Packs) && MyBotModule.Broodwar.self().isResearching(TechType.Stim_Packs)) {
+					if (MyBotModule.Broodwar.self().isResearchAvailable(TechType.Stim_Packs) && BuildManager.Instance().buildQueue.getItemCount(TechType.Stim_Packs) == 0) {
+						if (MyBotModule.Broodwar.self().minerals() >= TechType.Stim_Packs.mineralPrice() && MyBotModule.Broodwar.self().gas() >= TechType.Stim_Packs.gasPrice()) {
+							BuildManager.Instance().buildQueue.queueAsHighestPriority(TechType.Stim_Packs, false);
+							return true;
+						}
+					}
+				}
+
+				if (tryToUpgrade(terranInfo.academy.getUnit(), UpgradeType.U_238_Shells)) return true;
+			}
+		}
+		return false;
+	}
+
+
+
+	protected int supplyRemaining() {
+		return terranInfo.supplyProvidedCnt + terranInfo.supplyProvidedConstCnt - (terranInfo.supplyOccupiedCnt + terranInfo.supplyOccupiedConstCnt);
+	}
+
+	protected boolean tryToUpgrade(Unit upgrader, UpgradeType upgType) {
+		Player self = MyBotModule.Broodwar.self();
+		int maxLvl = self.getMaxUpgradeLevel(upgType);
+		int currentLvl = self.getUpgradeLevel(upgType);
+		if ( !self.isUpgrading(upgType) && currentLvl < maxLvl && self.completedUnitCount(upgType.whatsRequired(currentLvl+1)) > 0 && self.completedUnitCount(upgType.whatUpgrades()) > 0 )
+		{
+			if (BuildManager.Instance().buildQueue.getItemCount(upgType) == 0) {
+				return upgrader.upgrade(upgType);
+			}
+		}
+		return false;
 	}
 
 

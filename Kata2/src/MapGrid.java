@@ -17,7 +17,9 @@ public class MapGrid {
 	{
 		return MapGrid.Instance().gridCells[(x-1)*128+(y-1)].toTilePosition();
 	}
-	
+
+	public static GridCell MostOurMarineExists = null;
+
 	/// 지도를 바둑판처럼 Cell 들로 나누기 위해서 정의한 하나의 Cell
 	class GridCell
 	{
@@ -25,6 +27,7 @@ public class MapGrid {
 		private int timeLastOpponentSeen;	///< 가장 마지막에 적을 발견했던 시각이 언제인지 -> 적 의도 파악, 적 부대 파악, 전략 수립에 활용
 		private List<Unit> ourUnits= new ArrayList<Unit>();
 		private List<Unit> oppUnits= new ArrayList<Unit>();
+		private List<Unit> ourMarines = new ArrayList<>();
 		private Position center;
 		
 		private TilePosition tilePosition;
@@ -45,6 +48,21 @@ public class MapGrid {
 		public TilePosition toTilePosition()
 		{
 			return tilePosition;
+		}
+
+		public void addOurUnit(Unit unit) {
+			ourUnits.add(unit);
+			if (unit.getType().equals(UnitType.Terran_Marine)) {
+				if (MostOurMarineExists == null || MostOurMarineExists.ourMarines.size() < ourMarines.size()) {
+					MostOurMarineExists = this;
+				}
+			}
+		}
+
+		public void clear() {
+			oppUnits = new ArrayList<Unit>();
+			ourUnits = new ArrayList<Unit>();
+			ourMarines.clear();
 		}
 	};
 	
@@ -178,10 +196,12 @@ public class MapGrid {
 	
 	// clear the vectors in the grid
 	public void clearGrid() {
+		MostOurMarineExists = null;
 		for (int i = 0; i< gridCells.length ; ++i)
 		{
-			gridCells[i].oppUnits = new ArrayList<Unit>();
-			gridCells[i].ourUnits = new ArrayList<Unit>();
+//			gridCells[i].oppUnits = new ArrayList<Unit>();
+//			gridCells[i].ourUnits = new ArrayList<Unit>();
+			gridCells[i].clear();
 		}
 	}
 
@@ -196,7 +216,8 @@ public class MapGrid {
 		// add our units to the appropriate cell
 		for (Unit unit : MyBotModule.Broodwar.self().getUnits())
 		{
-			getCell(unit).ourUnits.add(unit);
+			//getCell(unit).ourUnits.add(unit);
+			getCell(unit).addOurUnit(unit);
 			getCell(unit).timeLastVisited = MyBotModule.Broodwar.getFrameCount();
 		}
 

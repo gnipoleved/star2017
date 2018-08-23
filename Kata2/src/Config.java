@@ -53,7 +53,7 @@ public class Config {
 	public static int TILE_SIZE = 32;
 
 	/// 각각의 Refinery 마다 투입할 일꾼 최대 숫자
-	public static int WorkersPerRefinery = 3;
+	public static int WorkersPerRefinery = 1;
 	/// 건물과 건물간 띄울 최소한의 간격 - 일반적인 건물의 경우
 	public static int BuildingSpacing = 2;
 	/// 건물과 건물간 띄울 최소한의 간격 - ResourceDepot 건물의 경우 (Nexus, Hatchery, Command Center)

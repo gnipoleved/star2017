@@ -40,6 +40,9 @@ public class _TerranInfo {
     public int supplyDepotConstCnt = 0;
     public int supplyDepotTryCnt = 0;
 
+    public int refineryCnt = 0;
+    public int refineryConstCnt = 0;
+
     public int factoryCnt = 0;
     public int factoryConstCnt = 0;
     public int factoryTryCnt = 0;
@@ -75,6 +78,9 @@ public class _TerranInfo {
     public int marineCnt = 0;
     public int marineConstCnt = 0;
     public int marineTryCnt = 0;
+
+    public int medicCnt = 0;
+    public int medicConstCnt = 0;
 
     public int tankCnt = 0;
     public int tankConstCnt = 0;
@@ -123,13 +129,16 @@ public class _TerranInfo {
 
     public List<Unit> tanks = new ArrayList<>();
 
+    public List<UnitInfo> self_units = new ArrayList<>();
     public List<UnitInfo> self_marines = new ArrayList<>();
+    public List<UnitInfo> self_medics = new ArrayList<>();
     public List<UnitInfo> self_underAttackSCVS = new ArrayList<>();
 
 
     public List<UnitInfo> list_cmdCenter = new ArrayList<>();   public int limit_cmdCenter; // limit 값들은 각 strategy 에서 변경한다.
     public List<UnitInfo> list_supplyDepot = new ArrayList<>(); public int limit_supplyDepot;
     public List<UnitInfo> list_barracks = new ArrayList<>();    public int limit_barracks;
+    public UnitInfo academy;
 
 
     // 매 frame 먀다 초기화 해서 count 또는 add 하는 변수들
@@ -138,7 +147,9 @@ public class _TerranInfo {
         list_supplyDepot.clear();
         list_barracks.clear();
 
+        self_units.clear();
         self_marines.clear();
+        self_medics.clear();
         //self_underAttackSCVS.clear();	// 이건 매 frame 마다 초기화 히지 않고.. 한번 add 된 건 starategyManager 에서 underAttack 아닌 경우 해제 하는 걸로...
 
         idleCnt = new int[3000];
@@ -168,6 +179,9 @@ public class _TerranInfo {
         supplyDepotCnt = 0;
         supplyDepotConstCnt = 0;
 
+        refineryCnt = 0;
+        refineryConstCnt = 0;
+
         factoryCnt = 0;
         factoryConstCnt = 0;
 
@@ -194,6 +208,9 @@ public class _TerranInfo {
 
         marineCnt = 0;
         marineConstCnt = 0;
+
+        medicCnt = 0;
+        medicConstCnt = 0;
 
         tankCnt = 0;
         tankConstCnt = 0;
@@ -240,6 +257,8 @@ public class _TerranInfo {
         enemy_listZealot.clear();
         enemy_listDragon.clear();
 
+        academy = null;
+
         //enemy_listPhoton.clear();
     }
 
@@ -258,9 +277,10 @@ public class _TerranInfo {
                 else if (ui.getType().equals(Terran_Comsat_Station)) {comsatStationCnt++;	comsatStations.add(ui.getUnit());	}
                 else if (ui.getType().equals(Terran_Barracks)) {barracksCnt++;  list_barracks.add(ui);}
                 else if (ui.getType().equals(Terran_Supply_Depot)) {supplyDepotCnt++;   list_supplyDepot.add(ui);}
+                else if (ui.getType().equals(Terran_Refinery)) {refineryCnt++;}
                 else if (ui.getType().equals(Terran_Factory)) factoryCnt++;
                 else if (ui.getType().equals(Terran_Machine_Shop)) machineShopCnt++;
-                else if (ui.getType().equals(Terran_Academy)) academyCnt++;
+                else if (ui.getType().equals(Terran_Academy)) { academyCnt++; academy = ui;}
                 else if (ui.getType().equals(Terran_Armory)) armoryCnt++;
                 else if (ui.getType().equals(Terran_Engineering_Bay)) engbayCnt++;
                 else if (ui.getType().equals(Terran_Starport)) starportCnt++;
@@ -272,6 +292,7 @@ public class _TerranInfo {
                 else if (ui.getType().equals(Terran_Comsat_Station)) comsatStationConstCnt++;
                 else if (ui.getType().equals(Terran_Barracks)) barracksConstCnt++;
                 else if (ui.getType().equals(Terran_Supply_Depot)) supplyDepotConstCnt++;
+                else if (ui.getType().equals(Terran_Refinery)) {refineryConstCnt++;}
                 else if (ui.getType().equals(Terran_Factory)) factoryConstCnt++;
                 else if (ui.getType().equals(Terran_Machine_Shop)) machineShopConstCnt++;
                 else if (ui.getType().equals(Terran_Academy)) academyConstCnt++;
@@ -285,6 +306,8 @@ public class _TerranInfo {
         } else {
 
             if (isAlive(ui.getUnit())) {
+
+                self_units.add(ui);
 
                 if (ui.getUnit().isIdle()) {
                     idleCnt[ui.getUnitID()]++;
@@ -334,6 +357,7 @@ public class _TerranInfo {
                         }
 
                     } else if (ui.getType().equals(Terran_Marine)) {marineCnt++;    self_marines.add(ui); }
+                    else if (ui.getType().equals(Terran_Medic)) {medicCnt++;    self_medics.add(ui);}
                     else if (ui.getType().equals(Terran_Siege_Tank_Tank_Mode) || ui.getType().equals(Terran_Siege_Tank_Siege_Mode)) {tankCnt++;	tanks.add(ui.getUnit());}
                     else if (ui.getType().equals(Terran_Vulture)) vultureCnt++;
                     else if (ui.getType().equals(Terran_Goliath)) goliathCnt++;
@@ -347,6 +371,7 @@ public class _TerranInfo {
                     supplyProvidedConstCnt += ui.getType().supplyProvided(); // zerg가 아니면 의미 없으므로 주석처리
                     if (ui.getType().equals(Terran_SCV)) scvConstCnt++;
                     else if (ui.getType().equals(Terran_Marine)) marineConstCnt++;
+                    else if (ui.getType().equals(Terran_Medic)) {medicConstCnt++;}
                     else if (ui.getType().equals(Terran_Siege_Tank_Tank_Mode) || ui.getType().equals(Terran_Siege_Tank_Siege_Mode)) tankConstCnt++;
                     else if (ui.getType().equals(Terran_Vulture)) vultureConstCnt++;
                     else if (ui.getType().equals(Terran_Goliath)) goliathConstCnt++;
@@ -365,6 +390,8 @@ public class _TerranInfo {
     public int enemy_attackedCntBunkerConstScv = 0;
     public Unit enemy_attackedBunkerConstScv = null;
 
+    public List<UnitInfo> enemy_listBuildings = new ArrayList<>();
+
     public List<UnitInfo> enemy_listProbe = new ArrayList<>();
     public List<UnitInfo> enemy_listZealot = new ArrayList<>();
     public List<UnitInfo> enemy_listDragon = new ArrayList<>();
@@ -375,6 +402,12 @@ public class _TerranInfo {
     	if (eui == null || eui.getUnit().getPlayer() != MyBotModule.Broodwar.enemy()) return;
     	
     	if (eui.getType().isBuilding()) {
+
+    	    if (eui.isFirstSeen()) {
+    	        __Util.println(eui.getUnit().getType() + "("+eui.getUnitID() + ") : first seen");
+                enemy_listBuildings.add(eui);
+            }
+
     		if (eui.getUnit().getType() == Terran_Bunker) {
     			if (eui.getUnit().isBeingConstructed()) {
 	    			Unit buildUnit = eui.getUnit().getBuildUnit();
@@ -437,5 +470,10 @@ public class _TerranInfo {
         return unit != null && unit.exists() && unit.getHitPoints() > 0;
     }
 
+
+    public void removeEnemyUnit(Unit unit) {
+        //enemy_listBuildings 에서 remove 할 건지 말 건지 생각...
+
+    }
 
 }

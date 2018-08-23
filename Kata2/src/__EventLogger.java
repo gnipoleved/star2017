@@ -16,24 +16,24 @@ public class __EventLogger implements __IEventLogger {
 	@Override
 	public void logOnStart() {
 		if (logging) {
-			__Util.println("~~~~~~~ Game started.");
-			__Util.println("~~~~ unit count : " + MyBotModule.Broodwar.getAllUnits().size());
+//			__Util.println("~~~~~~~ Game started.");
+//			__Util.println("~~~~ unit count : " + MyBotModule.Broodwar.getAllUnits().size());
 		}
 	}
 	
 	@Override
 	public void logOnEnd(boolean isWinner) {
 		if (logging) {
-			__Util.println(" >> unit count : " + MyBotModule.Broodwar.getAllUnits().size() + " at " + MyBotModule.Broodwar.getFrameCount());
+//			__Util.println(" >> unit count : " + MyBotModule.Broodwar.getAllUnits().size() + " at " + MyBotModule.Broodwar.getFrameCount());
 			
-			__Util.println("   -> showCnt : " + showCnt);
-			__Util.println("   -> discoverCnt : " + discoverCnt);
-			__Util.println("   -> evadeCnt : " + evadeCnt);
-			__Util.println("   -> hideCnt : " + hideCnt);
+//			__Util.println("   -> showCnt : " + showCnt);
+//			__Util.println("   -> discoverCnt : " + discoverCnt);
+//			__Util.println("   -> evadeCnt : " + evadeCnt);
+//			__Util.println("   -> hideCnt : " + hideCnt);
 			
-			__Util.println("   -> maxUnitId : " + maxUnitId);
+//			__Util.println("   -> maxUnitId : " + maxUnitId);
 			
-			__Util.println("~~~~~ Game ended.");
+//			__Util.println("~~~~~ Game ended.");
 		}
 	}
 	

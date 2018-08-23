@@ -147,7 +147,7 @@ public class InformationManager {
 			return unitData.get(unit.getPlayer()).updateUnitInfo(unit);
 		} catch (Exception e) {
 			//e.printStackTrace();
-			__Util.println(e);
+//			__Util.println(e);
 			throw e;
 		}
 	}
@@ -185,10 +185,12 @@ public class InformationManager {
 		}
 
 		unitData.get(unit.getPlayer()).removeUnit(unit);
+
+		terranInfo.removeEnemyUnit(unit);
 		
-		if (unit.getType().isNeutral()) {
-			return;
-		}
+//		if (unit.getType().isNeutral()) {
+//			return;
+//		}
 		
 	}
 
@@ -287,28 +289,48 @@ public class InformationManager {
 
 			if (enemyStartLocationFound == false) {
 				for (Chokepoint chokepoint : BWTA.getChokepoints()) {
-					BaseLocation startLocation = BWTA.getNearestBaseLocation(chokepoint.getCenter());
+
 					if (existsPlayerBuildingInRegion(BWTA.getRegion(chokepoint.getCenter()), enemyPlayer)) {
+						BaseLocation startLocation = getNearestStartLocation(chokepoint.getCenter());
+						if (startLocation.equals(MyBotModule.Broodwar.self().getStartLocation())) continue;
 						enemyStartLocationFound = true;
 						mainBaseLocations.put(enemyPlayer, startLocation);
 						mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
 					}
-					if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition())) {
-						// if it's explored, increment
-						exploredStartLocations++;
-					} else {
-						// otherwise set it as unexplored base
-						unexplored = startLocation;
-					}
-				}
-				for (Unit unit : MyBotModule.Broodwar.enemy().getUnits()) {
-					if (CommandUtil.IS_VALID_UNIT(unit)) {
-
-					}
+//					if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition())) {
+//						// if it's explored, increment
+//						exploredStartLocations++;
+//					} else {
+//						// otherwise set it as unexplored base
+//						unexplored = startLocation;
+//					}
+					if (enemyStartLocationFound) break;
 				}
 			}
 
-			// if we've explored every start location except one, it's the enemy
+            if (enemyStartLocationFound == false) {
+                for (BaseLocation baseLocation : BWTA.getBaseLocations()) {
+
+                    if (existsPlayerBuildingInRegion(BWTA.getRegion(baseLocation.getTilePosition()), enemyPlayer)) {
+						BaseLocation startLocation = getNearestStartLocation(baseLocation.getPosition());
+						if (startLocation.equals(MyBotModule.Broodwar.self().getStartLocation())) continue;
+                        enemyStartLocationFound = true;
+                        mainBaseLocations.put(enemyPlayer, startLocation);
+                        mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
+                    }
+//                    if (MyBotModule.Broodwar.isExplored(startLocation.getTilePosition())) {
+//                        // if it's explored, increment
+//                        exploredStartLocations++;
+//                    } else {
+//                        // otherwise set it as unexplored base
+//                        unexplored = startLocation;
+//                    }
+					if (enemyStartLocationFound) break;
+                }
+            }
+
+
+            // if we've explored every start location except one, it's the enemy
 			if (!enemyStartLocationFound && exploredStartLocations == ((int) BWTA.getStartLocations().size() - 1)) {
 				enemyStartLocationFound = true;
 				mainBaseLocations.put(enemyPlayer, unexplored);
@@ -410,7 +432,20 @@ public class InformationManager {
 		updateChokePointAndExpansionLocation();
 	}
 
-	public void updateChokePointAndExpansionLocation() {
+    private BaseLocation getNearestStartLocation(Position position) {
+	    BaseLocation nearestStartLocation = null;
+	    double dist = 1000000.0;
+	    for (BaseLocation startLocation : BWTA.getStartLocations()) {
+	        double curDist = position.getDistance(startLocation.getPosition());
+	        if (dist > curDist) {
+	            dist = curDist;
+	            nearestStartLocation = startLocation;
+            }
+        }
+        return nearestStartLocation;
+    }
+
+    public void updateChokePointAndExpansionLocation() {
 		if (mainBaseLocationChanged.get(selfPlayer).booleanValue() == true) {
 		
 			if (mainBaseLocations.get(selfPlayer) != null) {

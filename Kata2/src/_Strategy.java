@@ -66,7 +66,7 @@ class _StrategySelector
 		}
 		
 		
-		__Util.println(" >>>> MapTactic Type : " + mapTactic.getClass().getSimpleName());
+//		__Util.println(" >>>> MapTactic Type : " + mapTactic.getClass().getSimpleName());
 		
 		//terranStrategy.mapTactic = mapTactic;
 		terranStrategy.setTerranMapTactic((mapTactic));

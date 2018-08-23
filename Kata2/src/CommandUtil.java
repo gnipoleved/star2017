@@ -83,37 +83,41 @@ public class CommandUtil {
 		int pex = b.getX(), pey = b.getY();
 		double magnitude = Math.sqrt((psx-pex)*(psx-pex) + (psy-pey)*(psy-pey));
 		double unitVectorX = (pex - psx)/magnitude, unitVectorY = (pey - psy)/magnitude;
-		//Position newPosition = new Position(psx-(int)(vectorX*factor), psy-(int)(vectorY*factor));
 		double newPosX = psx-(unitVectorX*factor), newPosY = psy-(unitVectorY*factor);
-//		if (newPosition.getX() <= 0 * 32 || newPosition.getX() >= 127 * 32 || newPosition.getY() <= 0 * 32 || newPosition.getY() >= 127 * 32 || MyBotModule.Broodwar.isWalkable(newPosition.getX() / 32, newPosition.getY() / 32)) 
-//			newPosition = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().selfPlayer).getPosition();
-//		if (newPosX <= 0) {
-//			if (newPosY <= 0) {
-//				if (b.getX() > b.getY()) {
-//					newPosY = factor;
-//				}
-//			} else {
-//				
-//			}
-//		}
+
+//		__Util.println("----------------------------------------------------------------------");
+//		__Util.println("@ Trying to move to (" + newPosX + "," + newPosY + ")");
 		if (!IS_WALKABLE(newPosX, newPosY)) {
+//			__Util.println("   > Not walkable (" + newPosX + "," + newPosY + ")");
 			if (Math.abs(psx-pex) > Math.abs(psy-pey)) {
 				newPosY -= factor;
+//				__Util.println("   @ Trying to move to (" + newPosX + "," + newPosY + ")");
 				if (!IS_WALKABLE(newPosX, newPosY)) {
-					newPosY += factor;
-//					if (!IS_WALKABLE(newPosX, newPosY)){
-//						newPosX = pex+(unitVectorX*factor); 
+//					__Util.println("      > Not walkable (" + newPosX + "," + newPosY + ")");
+					newPosY += 2*factor;
+//					__Util.println("      @ Trying to move to (" + newPosX + "," + newPosY + ")");
+					if (!IS_WALKABLE(newPosX, newPosY)){
+//						__Util.println("         > Not walkable (" + newPosX + "," + newPosY + ")");
+//						newPosX = pex+(unitVectorX*factor);
 //						newPosY = pey+(unitVectorY*factor);
-//					}
+						newPosX = MyBotModule.Broodwar.self().getStartLocation().getX();
+						newPosY = MyBotModule.Broodwar.self().getStartLocation().getY();
+					}
 				}
 			} else {
 				newPosX -= factor;
+//				__Util.println("   @ Trying to move to (" + newPosX + "," + newPosY + ")");
 				if (!IS_WALKABLE(newPosX, newPosY)) {
-					newPosX += factor;
-//					if (!IS_WALKABLE(newPosX, newPosY)){
-//						newPosX = pex+(unitVectorX*factor); 
+//					__Util.println("      > Not walkable (" + newPosX + "," + newPosY + ")");
+					newPosX += 2*factor;
+//					__Util.println("      @ Trying to move to (" + newPosX + "," + newPosY + ")");
+					if (!IS_WALKABLE(newPosX, newPosY)){
+//						__Util.println("         > Not walkable (" + newPosX + "," + newPosY + ")");
+//						newPosX = pex+(unitVectorX*factor);
 //						newPosY = pey+(unitVectorY*factor);
-//					}
+						newPosX = MyBotModule.Broodwar.self().getStartLocation().getX();
+						newPosY = MyBotModule.Broodwar.self().getStartLocation().getY();
+					}
 				}
 			}
 		}
@@ -121,34 +125,64 @@ public class CommandUtil {
 	}
 	
 	public static boolean IS_WALKABLE(double posX, double posY) {
-		if (posX <= 0*32 || posX >= 127*32 || posY <= 0*32 || posY >= 127*32 || MyBotModule.Broodwar.isWalkable((int)(posX/8), (int)(posY/8))) return false;
+//		if (posX <= 0*32 || posX >= 127*32 || posY <= 0*32 || posY >= 127*32 || MyBotModule.Broodwar.isWalkable((int)(posX/8), (int)(posY/8))) return false;
+		if (posX <= 0*32 || posX >= 127*32 || posY <= 0*32 || posY >= 127*32) return false;
 		else return true;
 	}
 	
-	
+
+	public static final int movingFrameCnt = 6;
+
 	public static void MOVE_BACK_CON(UnitInfo movingUnit, Unit enemyUnit) {
 		UnitControlData ucd = movingUnit.getUnitControlData();
-		Position backwardPosition = backwardPosition(movingUnit.getUnit().getPosition(), enemyUnit.getPosition(), 118);
+//		__Util.println(movingUnit.getUnitID() + " is moving back from " + enemyUnit.getID() + " ---- DIST: " + movingUnit.getUnit().getDistance(enemyUnit)
+//				+ " at current Positin ("+ movingUnit.getUnit().getPosition().getX() + "," + movingUnit.getUnit().getPosition().getY() + ")");
+		Position backwardPosition = backwardPosition(movingUnit.getUnit().getPosition(), enemyUnit.getPosition(), 90);
 		if (ucd == null) {
 			ucd = new UnitControlData();
-			ucd.setMoveControlData(backwardPosition);
+			ucd.setMoveControlData(backwardPosition, enemyUnit);
 			movingUnit.setUnitControlData(ucd);
 			commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+//			__Util.println("@ new ucd");
 		} else {
 			if (ucd.actionType == ActionType.MOVE) {
 				if (ucd.targetPosition.equals(backwardPosition)) {
-					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5 && MyBotModule.Broodwar.getFrameCount() - ucd.actionGivenFrame > 15){
-						movingUnit.getUnit().holdPosition();
-						ucd.clearControlData();
+					if (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5 || MyBotModule.Broodwar.getFrameCount() - ucd.actionGivenFrame > movingFrameCnt){
+//						movingUnit.getUnit().holdPosition();
+//						ucd.clearControlData();
+						ucd.setMoveControlData(backwardPosition, enemyUnit);
+						commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+//						__Util.println("@ hold position");
 					}
+					if (movingUnit.getLastPosition().equals(movingUnit.getUnit().getPosition())) commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+//					__Util.println("@ same backward position in ActionType.MOVE");
 				} else {
-					ucd.setMoveControlData(backwardPosition);
-					commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+					if (ucd.targetUnit == null || !ucd.targetUnit.equals(enemyUnit) || (movingUnit.getUnit().getDistance(ucd.targetPosition) <= 5 || MyBotModule.Broodwar.getFrameCount() - ucd.actionGivenFrame > movingFrameCnt)) {
+						ucd.setMoveControlData(backwardPosition, enemyUnit);
+						commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+//						__Util.println("@ move ucd changed");
+					}
+//					__Util.println("@ different backward position in ActionType.MOVE");
 				}
 			} else {
-				ucd.setMoveControlData(backwardPosition);
+				movingUnit.getUnit().stop();
+				ucd.setMoveControlData(backwardPosition, enemyUnit);
 				commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+//				__Util.println("@ differnet action type[" + ucd.actionType.getTypeValue() + "] so ucd move changed.");
 			}
+		}
+	}
+
+	public static void MOVE_CON(UnitInfo movingUnit, Position position) {
+		UnitControlData ucd = movingUnit.getUnitControlData();
+		if (ucd == null) {
+			ucd = new UnitControlData();
+			ucd.setMoveControlData(position);
+			movingUnit.setUnitControlData(ucd);
+			commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
+		} else {
+			ucd.setMoveControlData(position);
+			commandUtil.move(movingUnit.getUnit(), ucd.targetPosition);
 		}
 	}
 
