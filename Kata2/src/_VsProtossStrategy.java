@@ -67,8 +67,8 @@ public class _VsProtossStrategy extends _VsCommonStrategy {
 			Unit targetProbe = null, targetZealot = null, targetDragoon = null, targetPhoton = null;
 			int targetProbeDist = 1000000, targetZealotDist = 1000000, targetDragoonDist = 1000000, targetPhotonDist = 1000000;
 
-			Unit nearestSickMarine = null;
-			int sickMarineDist = 1000000;
+			Unit nearestSickMarine = null, nearestMarine = null;
+			int sickMarineDist = 1000000, nearMarineDist = 1000000;
 
 			if (CommandUtil.IS_VALID_UNIT(offense.getUnit()) == false) continue;
 
@@ -105,10 +105,22 @@ public class _VsProtossStrategy extends _VsCommonStrategy {
 						}
 					}
 				} else { // my unit 들인 경우
-					if (unit.getType().equals(Terran_Marine) && unit.getHitPoints() < Terran_Marine.maxHitPoints() && curDist < flexibleDist) {
-						if (sickMarineDist > curDist) {
-							nearestSickMarine = unit;
-							sickMarineDist = curDist;
+//					if (unit.getType().equals(Terran_Marine) && curDist < flexibleDist && unit.getHitPoints() < Terran_Marine.maxHitPoints()) {
+//						if (sickMarineDist > curDist) {
+//							nearestSickMarine = unit;
+//							sickMarineDist = curDist;
+//						}
+//					}
+					if (unit.getType().equals(Terran_Marine) && curDist < flexibleDist) {
+						if (nearMarineDist > curDist) {
+							nearestMarine = unit;
+							nearMarineDist = curDist;
+						}
+						if (unit.getHitPoints() < Terran_Marine.maxHitPoints()) {
+							if (sickMarineDist > curDist) {
+								nearestSickMarine = unit;
+								sickMarineDist = curDist;
+							}
 						}
 					}
 				}
@@ -120,10 +132,15 @@ public class _VsProtossStrategy extends _VsCommonStrategy {
 					if (targetZealot != null) {
 						UnitControlData ucd = offense.getUnitControlData();
 						if (ucd != null) {
-							if (!ucd.targetUnit.equals(targetZealot)) {
+							if (ucd.targetUnit.equals(targetZealot)) {
 								if (targetZealot.getDistance(offense.getUnit()) < 88) {
-									if (offense.getUnit().getPosition().getDistance(targetAttackPos) >= 32*32 && offense.getUnit().getDistance(MapGrid.MostOurMarineExists.getCenter()) < 20*32) {
-										CommandUtil.MOVE_CON(offense, MapGrid.MostOurMarineExists.getCenter());
+									if (offense.getUnit().getPosition().getDistance(targetAttackPos) >= 55*32 
+//											&& MapGrid.MostOurMarineExists != null
+//											&& offense.getUnit().getDistance(MapGrid.MostOurMarineExists.getCenter()) < 20*32 ) {
+											&& nearestMarine != null && offense.getUnit().getDistance(nearestMarine) > 120) {
+//										__Util.println(offense.getUnitID() + " come back to " + MapGrid.MostOurMarineExists.getCenter().getX()/32 + "," + MapGrid.MostOurMarineExists.getCenter().getY()/32);
+//										CommandUtil.MOVE_CON(offense, MapGrid.MostOurMarineExists.getCenter());
+										CommandUtil.MOVE_CON(offense, nearestMarine.getPosition());
 									} else {
 										CommandUtil.MOVE_BACK_CON(offense, targetZealot);
 									}
@@ -141,7 +158,8 @@ public class _VsProtossStrategy extends _VsCommonStrategy {
 				if (nearestSickMarine != null) {
 					CommandUtil.ATTACK_MOVE(offense.getUnit(), nearestSickMarine.getPosition());
 				} else {
-					CommandUtil.ATTACK_MOVE(offense.getUnit(), MapGrid.MostOurMarineExists.getCenter());
+					if (MapGrid.MostOurMarineExists == null) CommandUtil.ATTACK_MOVE(offense.getUnit(), targetAttackPos);
+					else CommandUtil.ATTACK_MOVE(offense.getUnit(), MapGrid.MostOurMarineExists.getCenter());
 				}
 			}
 
@@ -153,7 +171,11 @@ public class _VsProtossStrategy extends _VsCommonStrategy {
 				}
 
 				if (targetPhoton != null) {
-					CommandUtil.ATTACK_UNIT_CON(offense, targetPhoton);
+					if (targetPhoton.isBeingConstructed()) {
+						CommandUtil.ATTACK_UNIT_CON(offense, targetPhoton);
+					} else {
+						CommandUtil.MOVE_BACK_CON(offense, targetPhoton);
+					}
 				} else {
 					if (targetZealot != null || targetProbe != null) {
 						Unit closerUnit = null;
@@ -200,7 +222,9 @@ public class _VsProtossStrategy extends _VsCommonStrategy {
 //							}
 //						}
 						if (state == Common.initState) CommandUtil.MOVE_BACK_CON(offense, targetPhoton);
-						else CommandUtil.MOVE_BACK_CON(offense, targetPhoton);
+						else {
+							controlCombatScouterScv(offense.getUnit(), firstAssemblyArea, targetPhoton);
+						}
 					}
 //				} else {
 //					if (targetDragoon != null) {

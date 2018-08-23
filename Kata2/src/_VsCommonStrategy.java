@@ -159,8 +159,8 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 //				__Util.println(enemyBuilding.getUnit().getType() + ":(" + enemyBuilding.getUnit().getID() + ") >>> " 
 //						+ nearestBaseLocation.getTilePosition() + " / " + MyBotModule.Broodwar.self().getStartLocation().toPosition());
 //				if (nearestBaseLocation.equals(InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()))
-				__Util.println(enemyBuilding.getUnit().getType().toString() + " : " + 
-						BWTA.getRegion(enemyBuilding.getLastPosition()).toString() + " / " + BWTA.getRegion(MyBotModule.Broodwar.self().getStartLocation()).toString());
+//				__Util.println(enemyBuilding.getUnit().getType().toString() + " : " + 
+//						BWTA.getRegion(enemyBuilding.getLastPosition()).toString() + " / " + BWTA.getRegion(MyBotModule.Broodwar.self().getStartLocation()).toString());
 				if (BWTA.getRegion(enemyBuilding.getLastPosition()) == BWTA.getRegion(MyBotModule.Broodwar.self().getStartLocation())) {
 					inMyRegion = true;
 					targetEnemyBdgInMyRegion = enemyBuilding;
@@ -259,16 +259,72 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 			}
 			if (conScvCnt >= 2) return;
 		}
-
+		
 		// barracks 짓던 scv 가 4드론에 당해 죽었을 경우 어떻게 할건지 생각
-		if (conScvCnt == 2 && terranInfo.scvCnt == 8) {
+		if (conScvCnt == 2 && terranInfo.scvCnt >= 8) {
 			if (terranInfo.barracksCnt + terranInfo.barracksConstCnt < 1) {
-				conScv1.build(Terran_Barracks, MapGrid.GetTileFromPool(60, 62));
+				if (CommandUtil.IS_VALID_UNIT(conScv1)) conScv1.build(Terran_Barracks, MapGrid.GetTileFromPool(60, 62));
 				return;
 			}
 			if (terranInfo.barracksCnt + terranInfo.barracksConstCnt == 1 ) {
-				conScv2.build(Terran_Barracks, MapGrid.GetTileFromPool(64, 62));
+				if (CommandUtil.IS_VALID_UNIT(conScv2)) conScv2.build(Terran_Barracks, MapGrid.GetTileFromPool(64, 62));
 				return;
+			}
+		}
+		
+		if (conScvCnt >= 2) {
+//			if (!CommandUtil.IS_VALID_UNIT(conScv1)) {
+//				for (Unit scv : WorkerManager.Instance().getWorkerData().getWorkers()) {
+//					if (WorkerManager.Instance().isMineralWorker(scv) && !scv.isCarryingMinerals()) {
+//						conScv1 = scv;
+//						__Util.println("        ~~~~ conscv1 pickedup again : " + conScv1.getID());
+//						WorkerManager.Instance().moveWorkerTo(conScv1, MapGrid.GetTileFromPool(64, 64));
+//						break;
+//					}
+//				}
+//			}
+//			if (!CommandUtil.IS_VALID_UNIT(conScv2)) {
+//				for (Unit scv : WorkerManager.Instance().getWorkerData().getWorkers()) {
+//					if (WorkerManager.Instance().isMineralWorker(scv) && !scv.isCarryingMinerals()) {
+//						conScv2 = scv;
+//						__Util.println("        ~~~~ conscv2 pickedup again : " + conScv2.getID());
+//						WorkerManager.Instance().moveWorkerTo(conScv1, MapGrid.GetTileFromPool(64, 62));
+//						break;
+//					}
+//				}
+//			}
+			for (UnitInfo barrack : terranInfo.list_constBarracks) {
+				if (barrack.getUnit().getTilePosition().equals(MapGrid.GetTileFromPool(64, 64))) {
+					if (barrack.getUnit().getBuildUnit() == null) {
+						if (!CommandUtil.IS_VALID_UNIT(conScv1)) {
+							for (Unit scv : WorkerManager.Instance().getWorkerData().getWorkers()) {
+								if (WorkerManager.Instance().isMineralWorker(scv) && !scv.isCarryingMinerals()) {
+									conScv1 = scv;
+									__Util.println("        ~~~~ conscv1 pickedup again : " + conScv1.getID());
+									//WorkerManager.Instance().moveWorkerTo(conScv1, MapGrid.GetTileFromPool(64, 64));
+									break;
+								}
+							}
+						}
+						CommandUtil.RIGHT_CLICK(conScv1, barrack.getUnit());
+					}
+				}
+				if (barrack.getUnit().getTilePosition().equals(MapGrid.GetTileFromPool(64, 62))) {
+					if (barrack.getUnit().getBuildUnit() == null) {
+						if (!CommandUtil.IS_VALID_UNIT(conScv2)) {
+							for (Unit scv : WorkerManager.Instance().getWorkerData().getWorkers()) {
+								if (WorkerManager.Instance().isMineralWorker(scv) && !scv.isCarryingMinerals()) {
+									conScv2 = scv;
+									__Util.println("        ~~~~ conscv2 pickedup again : " + conScv2.getID());
+									//WorkerManager.Instance().moveWorkerTo(conScv1, MapGrid.GetTileFromPool(64, 62));
+									break;
+								}
+							}
+						}
+						CommandUtil.RIGHT_CLICK(conScv2, barrack.getUnit());
+					}
+				}
+				
 			}
 		}
 
@@ -305,6 +361,7 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 //		}
 
 		for (UnitInfo barrack : terranInfo.list_barracks) {
+			if (CommandUtil.IS_VALID_UNIT(barrack.getUnit()) == false) continue;
 			if (MyBotModule.Broodwar.self().minerals() >= 50 && barrack.getUnit().getTrainingQueue().isEmpty()) {
 				//barrack.getUnit().train(Terran_Marine);
 				if (STRATEGY_MODE == 1) {
@@ -330,7 +387,7 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 			}
 		}
 
-		if (terranInfo.list_supplyDepot.size() >= 2 && getScvCount() < 20*terranInfo.list_cmdCenter.size() && (terranInfo.marineCnt > 7 || terranInfo.vultureCnt > 3)) {
+		if (terranInfo.list_supplyDepot.size() >= 2 && getScvCount() < 22*terranInfo.list_cmdCenter.size() && (terranInfo.marineCnt > 7 || terranInfo.vultureCnt > 3)) {
 			if (MyBotModule.Broodwar.self().minerals() >= 50) {
 				if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
 					buildScvInHQ();
@@ -357,25 +414,96 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 		}
 
 		BaseLocation enemyBaseLocation = InformationManager.Instance().getMainBaseLocation(InformationManager.Instance().enemyPlayer);
-		if (enemyBaseLocation == null) return;	// 정찰이 되지 않은 경우 이니 다음 frame 까지 기다리기 위해 return
-		Position firstAssemblyArea = InformationManager.Instance().getSecondChokePoint(InformationManager.Instance().enemyPlayer).getCenter();
-		Position targetAttackPos = enemyBaseLocation.getPosition();
-
-		int range = 20 * 32;
-		if (state == Common.initState) {
-			int cntAssembled = 0;
-			final int attack_marine_cnt = 2;
-			for (UnitInfo marine : terranInfo.self_marines) {
-				if (Common.getDistanceSquared(firstAssemblyArea, marine.getUnit().getPosition()) < 64*64) cntAssembled++;
-				if (cntAssembled >= attack_marine_cnt) {
+		Position firstAssemblyArea = null, targetAttackPos = null;
+		if (enemyBaseLocation == null) {
+			if (terranInfo.marineCnt >= 5 && !CommandUtil.IS_VALID_UNIT(conScv1) && !CommandUtil.IS_VALID_UNIT(conScv2)) {
+				if (!MyBotModule.Broodwar.isExplored(mapTactic.Scout2ndPosition())) {
 					state = Common.attack;
-					frameAttackStarted = MyBotModule.Broodwar.getFrameCount();
-					break;
+					firstAssemblyArea = mapTactic.Scout2ndPosition().toPosition();
+					targetAttackPos = firstAssemblyArea;
+				} else if (!MyBotModule.Broodwar.isExplored(mapTactic.Scout3rdPosition())) {
+					state = Common.attack;
+					firstAssemblyArea = mapTactic.Scout3rdPosition().toPosition();
+					targetAttackPos = firstAssemblyArea;
+				} else if (!MyBotModule.Broodwar.isExplored(mapTactic.Scout1stPosition())) {
+					state = Common.attack;
+					firstAssemblyArea = mapTactic.Scout1stPosition().toPosition();
+					targetAttackPos = firstAssemblyArea;
+				}
+			}
+		} else {
+			firstAssemblyArea = InformationManager.Instance().getSecondChokePoint(InformationManager.Instance().enemyPlayer).getCenter();
+			targetAttackPos = enemyBaseLocation.getPosition();
+		}
+		
+		int attack_marine_cnt = 2;
+		//if (terranInfo.enmey_listPhoton.size() > 0) attack_marine_cnt = 7 * terranInfo.enmey_listPhoton.size();
+		
+		int enemyPhotonCnt = 0, enemyConstPhotonCnt=0, enemyNexusCnt = 0, enemyConstNext = 0;;
+		for (UnitInfo ebdg : terranInfo.enemy_listBuildings) {
+			if (ebdg.getUnit().getType()==Protoss_Photon_Cannon) {
+				if (ebdg.getUnit().isCompleted()) {enemyPhotonCnt++;}
+				else {enemyConstPhotonCnt++;}
+//			} else if (ebdg.getUnit().getType()==Protoss_Nexus) {
+				
+			}
+		}
+		
+		Position movePosition = null;
+		
+		if (enemyPhotonCnt > 0) {
+			attack_marine_cnt = 7 * enemyPhotonCnt + enemyConstPhotonCnt;
+			firstAssemblyArea = MapGrid.GetTileFromPool(64, 64).toPosition();
+		} else {
+			if (enemyConstPhotonCnt == 0) {
+				if (InformationManager.Instance().enemy_first_expand) {
+					if (enemyBaseLocation != null) movePosition = enemyBaseLocation.getPosition();
 				}
 			}
 		}
+		
+
+		int range = 20 * 32;
+		
+		int cntAssembled = 0;
+//		
+		for (UnitInfo marine : terranInfo.self_marines) {
+			if (Common.getDistanceSquared(firstAssemblyArea, marine.getUnit().getPosition()) < 64*64) cntAssembled++;
+		}
+		
+		if (cntAssembled >= attack_marine_cnt) {
+			state = Common.attack;
+			frameAttackStarted = MyBotModule.Broodwar.getFrameCount();
+		} else {
+			state = Common.initState;
+		}
+		
+		
+//		if (state == Common.initState) {
+//			int cntAssembled = 0;
+//			
+//			for (UnitInfo marine : terranInfo.self_marines) {
+//				if (Common.getDistanceSquared(firstAssemblyArea, marine.getUnit().getPosition()) < 64*64) cntAssembled++;
+//				if (cntAssembled >= attack_marine_cnt) {
+//					state = Common.attack;
+//					frameAttackStarted = MyBotModule.Broodwar.getFrameCount();
+//					break;
+//				}
+//			}
+//		}
 
 		if (state == Common.initState || state == Common.attack) {
+			
+			if (movePosition != null) {
+				for (UnitInfo offense : terranInfo.self_units) {
+
+					if (!(offense.getType().equals(Terran_SCV) && (offense.getUnit().equals(conScv1) || offense.getUnit().equals(conScv2)))
+							&& !offense.getType().equals(Terran_Marine) && !offense.getType().equals(Terran_Medic)) continue;	//  || !offense.getType().equals(Terran_SCV)) continue;
+					
+					CommandUtil.MOVE(offense.getUnit(), movePosition);
+					
+				}
+			}
 
 			if (unitControl(firstAssemblyArea, targetAttackPos, range)) return;
 
@@ -387,7 +515,9 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 	}
 
 	protected boolean BionicStrategy() {
-		Config.WorkersPerRefinery = 3;
+		if (terranInfo.scvCnt >= 20) Config.WorkersPerRefinery = 3;
+		else Config.WorkersPerRefinery = 1;
+
 
 		if (terranInfo.barracksCnt == 2) {
 			//if (getScvCount() + terranInfo.marineCnt + terranInfo.ma)

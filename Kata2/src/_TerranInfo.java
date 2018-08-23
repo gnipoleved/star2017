@@ -138,6 +138,7 @@ public class _TerranInfo {
     public List<UnitInfo> list_cmdCenter = new ArrayList<>();   public int limit_cmdCenter; // limit 값들은 각 strategy 에서 변경한다.
     public List<UnitInfo> list_supplyDepot = new ArrayList<>(); public int limit_supplyDepot;
     public List<UnitInfo> list_barracks = new ArrayList<>();    public int limit_barracks;
+    public List<UnitInfo> list_constBarracks = new ArrayList<>();
     public UnitInfo academy;
 
 
@@ -146,6 +147,7 @@ public class _TerranInfo {
         list_cmdCenter.clear();
         list_supplyDepot.clear();
         list_barracks.clear();
+        list_constBarracks.clear();
 
         self_units.clear();
         self_marines.clear();
@@ -256,6 +258,9 @@ public class _TerranInfo {
         enemy_listProbe.clear();
         enemy_listZealot.clear();
         enemy_listDragon.clear();
+        
+        enmey_listPhoton.clear();
+        enmey_listConstPhoton.clear();
 
         academy = null;
 
@@ -290,7 +295,7 @@ public class _TerranInfo {
                 supplyProvidedConstCnt += ui.getType().supplyProvided();
                 if (ui.getType().equals(Terran_Command_Center)) cmdCenterConstCnt++;
                 else if (ui.getType().equals(Terran_Comsat_Station)) comsatStationConstCnt++;
-                else if (ui.getType().equals(Terran_Barracks)) barracksConstCnt++;
+                else if (ui.getType().equals(Terran_Barracks)) {barracksConstCnt++; list_barracks.add(ui);}
                 else if (ui.getType().equals(Terran_Supply_Depot)) supplyDepotConstCnt++;
                 else if (ui.getType().equals(Terran_Refinery)) {refineryConstCnt++;}
                 else if (ui.getType().equals(Terran_Factory)) factoryConstCnt++;
@@ -395,6 +400,9 @@ public class _TerranInfo {
     public List<UnitInfo> enemy_listProbe = new ArrayList<>();
     public List<UnitInfo> enemy_listZealot = new ArrayList<>();
     public List<UnitInfo> enemy_listDragon = new ArrayList<>();
+    
+    public List<UnitInfo> enmey_listPhoton = new ArrayList<>();
+    public List<UnitInfo> enmey_listConstPhoton = new ArrayList<>();
 
 
     public void updateEnemyUnitInfo(UnitInfo eui) {
@@ -412,6 +420,13 @@ public class _TerranInfo {
 	    			}
     			}
     		}
+//    		} else if (eui.getUnit().getType() == Protoss_Photon_Cannon) {
+//    			if (eui.getUnit().isCompleted()) {enmey_listPhoton.add(eui);}
+//    			else {enmey_listConstPhoton.add(eui);}
+//    		}
+    		
+    		
+    		
     	} else {
             if (eui.getUnit().isCompleted()) {
                 if (eui.getUnit().getType().equals(Protoss_Probe)) { enemy_listProbe.add(eui);}

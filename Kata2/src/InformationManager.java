@@ -58,6 +58,8 @@ public class InformationManager {
 	private Map<Player, UnitData> unitData = new HashMap<Player, UnitData>();
 
 	public _TerranInfo terranInfo;
+	
+	public boolean enemy_first_expand = false;
 
 	/// static singleton 객체를 리턴합니다
 	public static InformationManager Instance() {
@@ -260,7 +262,7 @@ public class InformationManager {
 		// enemy 의 startLocation을 아직 모르는 경우
 		if (mainBaseLocations.get(enemyPlayer) == null) {
 			// how many start locations have we explored
-			int exploredStartLocations = 0;
+			int exploredStartLocations = 1;
 			boolean enemyStartLocationFound = false;
 
 			// an unexplored base location holder
@@ -331,6 +333,7 @@ public class InformationManager {
 						//if (startLocation.equals(mainBaseLocations.get(selfPlayer))) continue;
 						if (isMyBase(startLocation)) continue;
 						__Util.println("   ####################################### enemy base by base location : " + startLocation.getTilePosition().getX() + "/" + startLocation.getTilePosition().getY());
+						enemy_first_expand = true;
                         enemyStartLocationFound = true;
                         mainBaseLocations.put(enemyPlayer, startLocation);
                         mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
