@@ -151,12 +151,12 @@ public class _VsTerranStrategy extends _TerranStrategy {
 		if (getScvCount() < 8)
 		{
 try {
-	if (MyBotModule.Broodwar.self().minerals() >= 50) {
-		if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
-			buildScvInHQ();
-			return;
-		}
-	}
+			if (MyBotModule.Broodwar.self().minerals() >= 50) {
+				if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
+					buildScvInHQ();
+					return;
+				}
+			}
 } catch (Exception e){
 	__Util.println(e);
 }

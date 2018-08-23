@@ -403,11 +403,6 @@ public class _TerranInfo {
     	
     	if (eui.getType().isBuilding()) {
 
-    	    if (eui.isFirstSeen()) {
-    	        __Util.println(eui.getUnit().getType() + "("+eui.getUnitID() + ") : first seen");
-                enemy_listBuildings.add(eui);
-            }
-
     		if (eui.getUnit().getType() == Terran_Bunker) {
     			if (eui.getUnit().isBeingConstructed()) {
 	    			Unit buildUnit = eui.getUnit().getBuildUnit();

@@ -11,8 +11,11 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 
 	protected int conScvCnt = 0;
 	protected Unit conScv1, conScv2;
-	protected List<Unit> bdgAttackers = new ArrayList<>();
-	protected List<Unit> workerAttackers = new ArrayList<>();
+//	protected List<Unit> bdgAttackers = new ArrayList<>();
+//	protected List<Unit> workerAttackers = new ArrayList<>();
+	
+	protected Unit[] bdgAttackers = new Unit[2];
+	protected Unit[] workerAttackers = new Unit[1];
 
 	protected List<Unit> defenseWorkers;
 
@@ -145,47 +148,77 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 			return;
 		}
 
-		__Util.println("^_______________________________________________________________________^");
-		for (UnitInfo enemyBuilding : terranInfo.enemy_listBuildings) {
-
-			if (!CommandUtil.IS_VALID_UNIT(enemyBuilding.getUnit())) continue;
-			__Util.println(enemyBuilding.getUnit().getType() + ":(" + enemyBuilding.getUnit().getID() + ")");
-			if (BWTA.getNearestBaseLocation(enemyBuilding.getUnit().getPosition()).equals(MyBotModule.Broodwar.self().getStartLocation())) {
-				for (int index = 0; index < 1; index++) {
-					if (!CommandUtil.IS_VALID_UNIT(bdgAttackers.get(index))) {
-						Unit worker = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(Terran_Supply_Depot, enemyBuilding.getUnit().getPosition().toTilePosition(), false, 0);
-						WorkerManager.Instance().setCombatWorker(worker);
-						bdgAttackers.set(index, worker);
+//		__Util.println("^_______________________________________________________________________^");
+		if (MyBotModule.Broodwar.getFrameCount() % 24 == 0) {	// WokrerManager 처럼
+			UnitInfo targetEnemyBdgInMyRegion = null;
+			boolean inMyRegion = false;
+			for (UnitInfo enemyBuilding : terranInfo.enemy_listBuildings) {
+	
+				if (!CommandUtil.IS_VALID_UNIT_2(enemyBuilding.getUnit())) continue;
+//				BaseLocation nearestBaseLocation = BWTA.getNearestBaseLocation(enemyBuilding.getUnit().getPosition());
+//				__Util.println(enemyBuilding.getUnit().getType() + ":(" + enemyBuilding.getUnit().getID() + ") >>> " 
+//						+ nearestBaseLocation.getTilePosition() + " / " + MyBotModule.Broodwar.self().getStartLocation().toPosition());
+//				if (nearestBaseLocation.equals(InformationManager.Instance().getMainBaseLocation(MyBotModule.Broodwar.self()))
+				__Util.println(enemyBuilding.getUnit().getType().toString() + " : " + 
+						BWTA.getRegion(enemyBuilding.getLastPosition()).toString() + " / " + BWTA.getRegion(MyBotModule.Broodwar.self().getStartLocation()).toString());
+				if (BWTA.getRegion(enemyBuilding.getLastPosition()) == BWTA.getRegion(MyBotModule.Broodwar.self().getStartLocation())) {
+					inMyRegion = true;
+					targetEnemyBdgInMyRegion = enemyBuilding;
+					for (int index = 0; index < bdgAttackers.length; index++) {
+						//if (bdgAttackers.size() < index + 1) break;
+						if (!CommandUtil.IS_VALID_UNIT(bdgAttackers[index])) {
+							Unit worker = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(Terran_Supply_Depot, enemyBuilding.getUnit().getPosition().toTilePosition(), false, 0);
+							__Util.println("          bdg setup  >> " + ((worker!=null) ? worker.getID() : "null worker"));
+							WorkerManager.Instance().setCombatWorker(worker);
+							bdgAttackers[index] = worker;
+						}
 					}
-				}
-				for (int index = 0; index < 2; index++) {
-					if (!CommandUtil.IS_VALID_UNIT(workerAttackers.get(index))) {
-						Unit worker = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(Terran_Supply_Depot, enemyBuilding.getUnit().getPosition().toTilePosition(), false, 0);
-						WorkerManager.Instance().setCombatWorker(worker);
-						workerAttackers.set(index, worker);
+					for (int index = 0; index < workerAttackers.length; index++) {
+						//if (workerAttackers.size() < index+1) break;
+						if (!CommandUtil.IS_VALID_UNIT(workerAttackers[index])) {
+							Unit worker = WorkerManager.Instance().chooseConstuctionWorkerClosestTo(Terran_Supply_Depot, enemyBuilding.getUnit().getPosition().toTilePosition(), false, 0);
+							WorkerManager.Instance().setCombatWorker(worker);
+							__Util.println("        work att setup    >> " + ((worker!=null) ? worker.getID() : "null worker"));
+							workerAttackers[index] = worker;
+						}
 					}
 				}
 			}
-		}
-
-		if (terranInfo.enemy_listBuildings.size() > 0) {
-			if (!CommandUtil.IS_VALID_UNIT(terranInfo.enemy_listBuildings.get(0).getUnit())) {
+	
+			if (inMyRegion) {
+				__Util.println("inMyRegion ? : " + inMyRegion);
+				//				__Util.println("bdgAttackers size : " + bdgAttackers.size());
+//				__Util.println("workerAttacker size : " + workerAttackers.size());
+				if (CommandUtil.IS_VALID_UNIT_2(targetEnemyBdgInMyRegion.getUnit())) {
+					for (Unit bdgAttacker : bdgAttackers) {
+						__Util.println("     bdt attacking >>> " + (bdgAttacker!=null?bdgAttacker.getID()+"":"null bdg"));
+						if (CommandUtil.IS_VALID_UNIT(bdgAttacker)) CommandUtil.ATTACK_UNIT(bdgAttacker, targetEnemyBdgInMyRegion.getUnit());
+					}
+					for (Unit workerAttacker : workerAttackers) {
+						__Util.println("     worker attacking >>> " + (workerAttacker!=null?workerAttacker.getID()+"":"null workerAttacker"));
+						Unit target = WorkerManager.Instance().getClosestEnemyUnitNotBdg(workerAttacker);
+						if (CommandUtil.IS_VALID_UNIT_2(target)) {
+							if (CommandUtil.IS_VALID_UNIT(workerAttacker)) CommandUtil.ATTACK_UNIT(workerAttacker, target);
+						}
+					}
+				}
+			} else {
 				for (Unit bdgAttacker : bdgAttackers) {
-					CommandUtil.ATTACK_UNIT(bdgAttacker, terranInfo.enemy_listBuildings.get(0).getUnit());
-				}
-				for (Unit workerAttacker : workerAttackers) {
-					Unit target = WorkerManager.Instance().getClosestEnemyUnitFromWorker(workerAttacker);
-					if (CommandUtil.IS_VALID_UNIT(target)) {
-						CommandUtil.ATTACK_UNIT(workerAttacker, target);
+					if (CommandUtil.IS_VALID_UNIT(bdgAttacker)) {
+						WorkerManager.Instance().setMineralWorker(bdgAttacker);
+						__Util.println("     bdg revoke >>> " + (bdgAttacker!=null?bdgAttacker.getID()+"":"null bdg"));
 					}
 				}
-			}
-		} else {
-			for (Unit bdgAttacker : bdgAttackers) {
-				WorkerManager.Instance().setMineralWorker(bdgAttacker);
-			}
-			for (Unit workerAttacker : workerAttackers) {
-				WorkerManager.Instance().setMineralWorker(workerAttacker);
+				bdgAttackers = new Unit[bdgAttackers.length];
+//				bdgAttackers = new Unit[1];
+				for (Unit workerAttacker : workerAttackers) {
+					if (CommandUtil.IS_VALID_UNIT(workerAttacker)) {
+						WorkerManager.Instance().setMineralWorker(workerAttacker);
+						__Util.println("     worker revoke >>> " + (workerAttacker!=null?workerAttacker.getID()+"":"null bdg"));
+					}
+				}
+				workerAttackers = new Unit[workerAttackers.length];
+//				workerAttackers = new Unit[2];
 			}
 		}
 
@@ -194,7 +227,7 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 			if (MyBotModule.Broodwar.self().minerals() >= 50) {
 				if (terranInfo.list_cmdCenter.get(0).getUnit().getTrainingQueue().isEmpty()) {
 					buildScvInHQ();
-					return;
+					//return;
 				}
 			}
 
@@ -203,6 +236,7 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 					if (WorkerManager.Instance().isMineralWorker(scv) && !scv.isCarryingMinerals()) {
 						conScv1 = scv;
 						conScvCnt = 1;
+						__Util.println("        ~~~~ conscv1 pickedup : " + conScv1.getID());
 						WorkerManager.Instance().moveWorkerTo(conScv1, MapGrid.GetTileFromPool(64, 64));
 						break;
 					}
@@ -218,6 +252,7 @@ public abstract class _VsCommonStrategy extends _TerranStrategy {
 				if (WorkerManager.Instance().isMineralWorker(scv) && !scv.isCarryingMinerals()) {
 					conScv2 = scv;
 					conScvCnt = 2;
+					__Util.println("        ~~~~ conscv2 pickedup : " + conScv2.getID());
 					WorkerManager.Instance().moveWorkerTo(conScv2, MapGrid.GetTileFromPool(64, 64));
 					break;
 				}

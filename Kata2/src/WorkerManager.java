@@ -633,6 +633,29 @@ public class WorkerManager {
 
 		return closestUnit;
 	}
+	
+	/// 해당 일꾼 유닛으로부터 가장 가까운 적군 유닛을 리턴합니다
+	public Unit getClosestEnemyUnitNotBdg(Unit worker)
+	{
+		if (worker == null) return null;
+
+		Unit closestUnit = null;
+		double closestDist = 10000;
+
+		for (Unit unit : MyBotModule.Broodwar.enemy().getUnits())
+		{
+			if (unit.getType().isBuilding()) continue;
+			double dist = unit.getDistance(worker);
+
+			if ((dist < 400) && (closestUnit == null || (dist < closestDist)))
+			{
+				closestUnit = unit;
+				closestDist = dist;
+			}
+		}
+
+		return closestUnit;
+	}
 
 	/// 해당 일꾼 유닛에게 Combat 임무를 부여합니다
 	public void setCombatWorker(Unit worker)

@@ -144,7 +144,12 @@ public class InformationManager {
 			if (enemyRace == Race.Unknown && unit.getPlayer() == enemyPlayer) {
 				enemyRace = unit.getType().getRace();
 			}
-			return unitData.get(unit.getPlayer()).updateUnitInfo(unit);
+			UnitInfo eui = unitData.get(unit.getPlayer()).updateUnitInfo(unit);
+			if (eui.getType().isBuilding() && eui.isFirstSeen() && eui.getUnit().getPlayer() == enemyPlayer) {
+			//if (eui.isFirstSeen() && eui.getUnit().getPlayer() == enemyPlayer) {	// 이렇게 하면 내 region 에서 보이면 끝까지 똧라감
+				terranInfo.enemy_listBuildings.add(eui);
+			}
+			return eui;
 		} catch (Exception e) {
 			//e.printStackTrace();
 //			__Util.println(e);
@@ -186,7 +191,7 @@ public class InformationManager {
 
 		unitData.get(unit.getPlayer()).removeUnit(unit);
 
-		terranInfo.removeEnemyUnit(unit);
+//		terranInfo.removeEnemyUnit(unit);
 		
 //		if (unit.getType().isNeutral()) {
 //			return;
@@ -262,8 +267,16 @@ public class InformationManager {
 			BaseLocation unexplored = null;
 
 			for (BaseLocation startLocation : BWTA.getStartLocations()) {
+				//if (startLocation.equals(mainBaseLocations.get(selfPlayer))) continue;
+				if (isMyBase(startLocation)) continue;
+					
 				if (existsPlayerBuildingInRegion(BWTA.getRegion(startLocation.getTilePosition()), enemyPlayer)) {
+					
 					if (enemyStartLocationFound == false) {
+						
+						__Util.println("   ############################### enemy base by start location : " + startLocation.getTilePosition().getX() + "/" + startLocation.getTilePosition().getY());
+						__Util.println("   ############################### what my? : " + mainBaseLocations.get(selfPlayer).getTilePosition().getX() + "/" + mainBaseLocations.get(selfPlayer).getTilePosition().getY());
+						__Util.println("   ###############################: " + startLocation.equals(mainBaseLocations.get(selfPlayer)) + "###### " + startLocation.getX() + " : " + mainBaseLocations.get(selfPlayer).getX());
 						enemyStartLocationFound = true;
 						mainBaseLocations.put(enemyPlayer, startLocation);
 						mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
@@ -292,7 +305,9 @@ public class InformationManager {
 
 					if (existsPlayerBuildingInRegion(BWTA.getRegion(chokepoint.getCenter()), enemyPlayer)) {
 						BaseLocation startLocation = getNearestStartLocation(chokepoint.getCenter());
-						if (startLocation.equals(MyBotModule.Broodwar.self().getStartLocation())) continue;
+						//if (startLocation.equals(mainBaseLocations.get(selfPlayer))) continue;
+						if (isMyBase(startLocation)) continue;
+						__Util.println("   ####################################### enemy base by start chokipoint : " + startLocation.getTilePosition().getX() + "/" + startLocation.getTilePosition().getY());
 						enemyStartLocationFound = true;
 						mainBaseLocations.put(enemyPlayer, startLocation);
 						mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
@@ -313,7 +328,9 @@ public class InformationManager {
 
                     if (existsPlayerBuildingInRegion(BWTA.getRegion(baseLocation.getTilePosition()), enemyPlayer)) {
 						BaseLocation startLocation = getNearestStartLocation(baseLocation.getPosition());
-						if (startLocation.equals(MyBotModule.Broodwar.self().getStartLocation())) continue;
+						//if (startLocation.equals(mainBaseLocations.get(selfPlayer))) continue;
+						if (isMyBase(startLocation)) continue;
+						__Util.println("   ####################################### enemy base by base location : " + startLocation.getTilePosition().getX() + "/" + startLocation.getTilePosition().getY());
                         enemyStartLocationFound = true;
                         mainBaseLocations.put(enemyPlayer, startLocation);
                         mainBaseLocationChanged.put(enemyPlayer, new Boolean(true));
@@ -432,7 +449,13 @@ public class InformationManager {
 		updateChokePointAndExpansionLocation();
 	}
 
-    private BaseLocation getNearestStartLocation(Position position) {
+    private boolean isMyBase(BaseLocation startLocation) {
+    	BaseLocation my = mainBaseLocations.get(selfPlayer);
+    	if (BWTA.getRegion(startLocation.getTilePosition()) == BWTA.getRegion(my.getTilePosition())) return true;
+    	else return false;
+	}
+
+	private BaseLocation getNearestStartLocation(Position position) {
 	    BaseLocation nearestStartLocation = null;
 	    double dist = 1000000.0;
 	    for (BaseLocation startLocation : BWTA.getStartLocations()) {

@@ -422,6 +422,13 @@ public class CommandUtil {
 
 		return false;
 	}
+	
+	public static boolean IS_VALID_UNIT_2(Unit unit) {
+		return unit != null && unit.getHitPoints() > 0
+				&& unit.exists()
+				&& unit.getType() != UnitType.Unknown
+				&& unit.getPosition().isValid();
+	}
 
 	public boolean IsValidUnit(Unit unit)
 	{
@@ -430,8 +437,8 @@ public class CommandUtil {
 			return false;
 		}
 
-		if (unit.isCompleted()
-			&& unit.getHitPoints() > 0
+		if (unit.isCompleted() && 
+			unit.getHitPoints() > 0
 			&& unit.exists()
 			&& unit.getType() != UnitType.Unknown
 			&& unit.getPosition().isValid())
